@@ -1,10 +1,3 @@
-# #TODO 
-# [] How to launch Powershell with a different profile. 
-#   Notes: Ideally we would have this profile as a new Terminal profile (~M365 admin)
-# [] Have profile in a non-standard location
-# [] Launch powershell with a different profile
-#References: https://gist.github.com/merlos/e4dabae049dea4b92e070d11d0f7bfa7
-
 # Set variables
 $service = ''
 $serviceCount = 0
