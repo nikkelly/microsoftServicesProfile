@@ -25,7 +25,7 @@ if ($script:toInstall.length -gt 0){
   if ($installAnswer -eq $true){
     Install-Module -Repository "PSGallery" -Name $modules -Force
   } elseif ($installAnswer -eq $false) {
-    Write-Host('exiting...')
+    Write-Host("`n`t*** Some modules are not installed - some services may not connect properly ***`n`n") -ForegroundColor Red
   } 
 }
 
@@ -40,17 +40,28 @@ if ((Test-Path env:microsoftConnectionUser) -And (Test-Path env:microsoftConnect
   Write-Host("`n`n Would you like to save them for later?`n`t ( y / n )") -ForegroundColor Yellow -NoNewLine
   $saveCreds = Read-Host -Prompt " "
   Switch($saveCreds){
-    Y {$saveAnswer=$true}
-    N {$saveAnswer=$false}
-    Default {$saveAnswer=$false}
+    Y {$firstSave=$true}
+    N {$firstSave=$false}
+    Default {$firstSave=$false}
   }
   Write-Host("Prompting for login:")
   $microsoftUser = Read-Host -Prompt "Enter Username"
   $microsoftPassword = Read-Host -Prompt "Enter password"
-  if($saveAnswer){
+
+  if($firstSave){
+    Write-Host("Username and password will be saved as plain text environment variables. Would you still like to save them?") -ForegroundColor Red
+    Write-Host("( y / n )") -ForegroundColor Yellow -NoNewLine
+    $saveAnswer = Read-Host -Prompt " "
+    Switch($saveCreds){
+      Y {$saveAnswer=$true}
+      N {$saveAnswer=$false}
+      Default {$saveAnswer=$false}
+    }
+    # if user still wants to save
     # save credentials as a User scoped environment variable 
+    if($saveAnswer){
     [System.Environment]::SetEnvironmentVariable('microsoftConnectionUser', $microsoftUser, [System.EnvironmentVariableTarget]::User)
-    [System.Environment]::SetEnvironmentVariable('microsoftConnectionPass', $microsoftPassword, [System.EnvironmentVariableTarget]::User)
+    [System.Environment]::SetEnvironmentVariable('microsoftConnectionPass', $microsoftPassword, [System.EnvironmentVariableTarget]::User)}
   }
 }
 # create microsoftCreds with user + pass
@@ -59,8 +70,6 @@ $microsoftCreds = New-Object System.Management.Automation.PSCredential -Argument
 
 Write-Host "Connect to Microsoft online services with these commands: " -ForegroundColor Green
 Write-Host "`nTeams | Exchange | Skype | MSOnline | SharePoint`n`n" -ForegroundColor DarkYellow
-
-
 
 # Change prompt when connecting to services
 function global:prompt() {
