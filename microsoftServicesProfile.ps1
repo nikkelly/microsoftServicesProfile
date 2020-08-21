@@ -73,7 +73,7 @@ if ((Test-Path env:microsoftConnectionUser) -And (Test-Path env:microsoftConnect
 }
 # create microsoftCreds with user + pass
 $securePwd = $microsoftPassword | ConvertTo-SecureString -AsPlainText -Force
-$microsoftCreds = New-Object System.Management.Automation.PSCredential -ArgumentList $microsoftUser, $securePwd
+$creds = New-Object System.Management.Automation.PSCredential -ArgumentList $microsoftUser, $securePwd
 
 Write-Host "Connect to Microsoft online services with these commands: " -ForegroundColor Green
 Write-Host "`nTeams | Exchange | Skype | MSOnline | SharePoint`n`n" -ForegroundColor DarkYellow
