@@ -23,7 +23,14 @@ if ($script:toInstall.length -gt 0){
     Default {$installAnswer=$false}
   }
   if ($installAnswer -eq $true){
-    Install-Module -Repository "PSGallery" -Name $modules -Force
+    # Check if admin
+    if([bool](([System.Security.Principal.WindowsIdentity]::GetCurrent()).groups -match "S-1-5-32-544")){
+      Install-Module -Repository "PSGallery" -Name $modules -Force
+    } else {
+      Write-Host("`nAdministrator rights are required to install modules. Please re-run as administrator.")
+      pause
+      Exit
+    }
   } elseif ($installAnswer -eq $false) {
     Write-Host("`n`t*** Some modules are not installed - some services may not connect properly ***`n`n") -ForegroundColor Red
   } 
