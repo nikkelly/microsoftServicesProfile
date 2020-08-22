@@ -76,7 +76,7 @@ $securePwd = $microsoftPassword | ConvertTo-SecureString -AsPlainText -Force
 $creds = New-Object System.Management.Automation.PSCredential -ArgumentList $microsoftUser, $securePwd
 
 Write-Host "Connect to Microsoft online services with these commands: " -ForegroundColor Green
-Write-Host "`nTeams | Exchange | Skype | MSOnline | SharePoint | AzureAD`n`n" -ForegroundColor DarkYellow
+Write-Host "`nTeams | Exchange | Skype | MSOnline | SharePoint | AzureAD | Security_Compliance`n`n" -ForegroundColor DarkYellow
 
 # Change prompt when connecting to services
 function global:prompt() {
@@ -174,3 +174,9 @@ function Skype(){
   Increment($MyInvocation.MyCommand.name)}
 }
 
+function Security_Compliance(){
+  checkServices($MyInvocation.MyCommand.name)
+  if($script:alreadyConnected = 1){
+    Connect-IPPSSession -Credential $creds -ConnectionUri https://ps.compliance.protection.outlook.com/powershell-liveid/
+  Increment($MyInvocation.MyCommand.name)}
+}
