@@ -3,7 +3,7 @@ $service = ''
 $serviceCount = 0
 
 # Check if modules are installed
-$modules = 'MicrosoftTeams','MSOnline','Microsoft.Online.SharePoint.PowerShell'
+$modules = 'MicrosoftTeams','MSOnline','Microsoft.Online.SharePoint.PowerShell','AzureAD'
 $toInstall = $()
 
 foreach ($module in $modules){
@@ -76,7 +76,7 @@ $securePwd = $microsoftPassword | ConvertTo-SecureString -AsPlainText -Force
 $creds = New-Object System.Management.Automation.PSCredential -ArgumentList $microsoftUser, $securePwd
 
 Write-Host "Connect to Microsoft online services with these commands: " -ForegroundColor Green
-Write-Host "`nTeams | Exchange | Skype | MSOnline | SharePoint`n`n" -ForegroundColor DarkYellow
+Write-Host "`nTeams | Exchange | Skype | MSOnline | SharePoint | AzureAD`n`n" -ForegroundColor DarkYellow
 
 # Change prompt when connecting to services
 function global:prompt() {
@@ -127,9 +127,15 @@ function Teams(){
   if($script:alreadyConnected = 1){
   Connect-MicrosoftTeams -Credential $creds
   Increment($MyInvocation.MyCommand.name)
-  } else {
-    Write-Host 'done'
   }
+}
+
+function AzureAD(){
+  checkServices($MyInvocation.MyCommand.name)
+  if($script:alreadyConnected = 1){
+    Connect-AzureAD -Credential $creds
+    Increment($MyInvocation.MyCommand.name)
+    }
 }
 
 # MSOnline 
@@ -137,7 +143,6 @@ function MSOnline(){
   checkServices($MyInvocation.MyCommand.name)
   if($script:alreadyConnected = 1){
   Connect-MsolService -Credential $creds
-  Write-Host "Connected to Azure AD!" -ForegroundColor DarkYellow
   Increment($MyInvocation.MyCommand.name)}
 }
 
@@ -156,7 +161,6 @@ function Exchange(){
   if($script:alreadyConnected = 1){
   $Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell-liveid/ -Credential $creds -Authentication Basic -AllowRedirection
   Import-PSSession $Session -DisableNameChecking
-  Write-Host "Connected to Exchange!" -ForegroundColor DarkYellow
   Increment($MyInvocation.MyCommand.name)}
 }
 
@@ -167,7 +171,6 @@ function Skype(){
   Import-Module SkypeOnlineConnector
   $sfbSession = New-CsOnlineSession -Credential $creds
   Import-PSSession $sfbSession
-  Write-Host "Connected to Skype Online!" -ForegroundColor DarkYellow
   Increment($MyInvocation.MyCommand.name)}
 }
 
