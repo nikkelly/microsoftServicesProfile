@@ -77,6 +77,9 @@ $creds = New-Object System.Management.Automation.PSCredential -ArgumentList $mic
 
 Write-Host "Connect to Microsoft online services with these commands: " -ForegroundColor Green
 Write-Host "`nTeams | Exchange | Skype | MSOnline | SharePoint | AzureAD | Security_Compliance`n`n" -ForegroundColor DarkYellow
+Write-host "Type " -NoNewline
+Write-host "Disconnect " -ForegroundColor DarkYellow -NoNewline
+Write-Host "to close all current connections" -NoNewline
 
 # Change prompt when connecting to services
 function global:prompt() {
@@ -119,7 +122,29 @@ function Increment($functionName){
   $script:serviceCount+=1
   Write-Host 'Connected to '$functionName -ForegroundColor DarkYellow
 }
+function disconnect(){
+  #Disconnect Exchange Online,Skype and Security & Compliance center session
+  if (($script:service -contains 'Skype') -or ($script:service -contains 'Exchange') -or ($script:service -contains 'Security_Compliance')){
+  Get-PSSession | Remove-PSSession}
+  #Disconnect Teams connection
+  if ($script:service -contains 'Teams'){
+  Disconnect-MicrosoftTeams}
+  #Disconnect SharePoint connection
+  if ($script:service -contains 'SharePoint'){
+  Disconnect-SPOService}
+  Write-Host "Disconnected from:`n`t"$script:service.replace("|","`n`t") -ForegroundColor Yellow
+  $script:service=''
+  $script:serviceCount=0
+}
 
+function connectAll(){
+  Teams
+  Exchange
+  Skype
+  SharePoint
+  Security_Compliance
+  AzureAD
+}
 ## Start Online Service Functions 
 # Teams
 function Teams(){
@@ -150,7 +175,7 @@ function MSOnline(){
 function SharePoint(){
   checkServices($MyInvocation.MyCommand.name)
   if($script:alreadyConnected = 1){
-  $orgName=$username.split('@').split('.')[1] # split the domain from $username
+  $orgName=$microsoftUser.split('@').split('.')[1] # split the domain from $microsoftUser
   Connect-SPOService -Url https://$orgName-admin.sharepoint.com -Credential $creds
   Increment($MyInvocation.MyCommand.name)}
 }
@@ -159,8 +184,8 @@ function SharePoint(){
 function Exchange(){
   checkServices($MyInvocation.MyCommand.name)
   if($script:alreadyConnected = 1){
-  $Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell-liveid/ -Credential $creds -Authentication Basic -AllowRedirection
-  Import-PSSession $Session -DisableNameChecking
+  $exoSession = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell-liveid/ -Credential $creds -Authentication Basic -AllowRedirection
+  Import-PSSession $exoSession -DisableNameChecking
   Increment($MyInvocation.MyCommand.name)}
 }
 
