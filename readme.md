@@ -1,6 +1,6 @@
 # Microsoft Services PowerShell Profile
 
-## Allows for connection to these M365 Services
+## Easily connect to these M365 Services
 - [Microsoft Teams](https://docs.microsoft.com/en-us/MicrosoftTeams/teams-powershell-overview)
 - [Skype for Business](https://docs.microsoft.com/en-us/microsoft-365/enterprise/manage-skype-for-business-online-with-microsoft-365-powershell?view=o365-worldwide)
 - [Microsoft Exchange Online](https://docs.microsoft.com/en-us/powershell/exchange/exchange-online-powershell?view=exchange-ps)
@@ -26,3 +26,9 @@ This was created to be used as a Windows Terminal profile and you can view my sa
 
 ## Links and Resources
 - [Generate a new guid with PowerShell](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/new-guid?view=powershell-7)
+
+### Notes
+Currently only working for accounts with basic authentication. 
+
+###### TODO
+- [] Add MFA account support
