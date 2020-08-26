@@ -76,10 +76,9 @@ $securePwd = $microsoftPassword | ConvertTo-SecureString -AsPlainText -Force
 $creds = New-Object System.Management.Automation.PSCredential -ArgumentList $microsoftUser, $securePwd
 
 Write-Host "Connect to Microsoft online services with these commands: " -ForegroundColor Green
-Write-Host "`nTeams | Exchange | Skype | MSOnline | SharePoint | AzureAD | Security_Compliance`n`n" -ForegroundColor DarkYellow
-Write-host "Type " -NoNewline
-Write-host "Disconnect " -ForegroundColor DarkYellow -NoNewline
-Write-Host "to close all current connections" -NoNewline
+Write-Host "`nTeams | Exchange | Skype | MSOnline (AAD V1) | AzureAD (AAD V2) | SharePoint | Security_Compliance | connectAll`n`n" -ForegroundColor Yellow
+Write-host "Disconnect" -ForegroundColor Yellow -NoNewline
+Write-Host ": close all current connections`n"
 
 # Change prompt when connecting to services
 function global:prompt() {
@@ -92,13 +91,12 @@ function global:prompt() {
 
   # Update the prompt
   if ($serviceCount -gt 0){
-    Write-Host ("$service") -ForegroundColor DarkYellow -NoNewline 
+    Write-Host ("$service") -ForegroundColor Yellow -NoNewline 
     Write-Host ( " | ") -ForegroundColor  White -NoNewline 
-    Write-Host (''+ $(Get-Location) +">") -ForegroundColor DarkMagenta -NoNewLine 
+    Write-Host (''+ $(Get-Location) +">")  -NoNewLine 
   }
   else{
     Write-Host ("$service" + $(Get-Location) +">") -NoNewLine `
-   -ForegroundColor DarkMagenta
   }
   return " "
 }
@@ -120,7 +118,7 @@ function Increment($functionName){
   }
   $script:service+=$functionName
   $script:serviceCount+=1
-  Write-Host 'Connected to '$functionName -ForegroundColor DarkYellow
+  Write-Host 'Connected to '$functionName -ForegroundColor Yellow
 }
 function disconnect(){
   #Disconnect Exchange Online,Skype and Security & Compliance center session
