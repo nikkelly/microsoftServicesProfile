@@ -20,5 +20,7 @@ Command | Module
 
 Use `Disconnect` to close all active connections
 
-#### Notes
+## Notes
 Passwords are stored in the local user environment variable `$env:microsoftConnectionPass` as plain text. 
+
+Accounts with MFA not currently supported
