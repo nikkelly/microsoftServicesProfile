@@ -7,6 +7,7 @@ Use `notepad $profile` to add this to your PowerShell profile
 ```
 Import-module '<path to file>/microsoftServicesProfile.ps1' -Force
 ```
+Credentials are captured during first run<sup>1</sup>
 ## Usage
 Command | Module Documentation
 --- | ---
@@ -23,5 +24,5 @@ Command | Module Documentation
 `connectAll` connect to all services at once
 
 ## Notes
-- Passwords are stored in the local user environment variable `$env:microsoftConnectionPass` as plain text. 
-- Accounts with MFA not currently supported
+1. Username and password are stored in the local user environment variable `$env:microsoftConnectionPass` as plain text. 
+2. Accounts with MFA not currently supported
