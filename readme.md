@@ -7,8 +7,9 @@ Use `notepad $profile` to add this to your PowerShell profile
 ```
 Import-module '<path to file>/microsoftServicesProfile.ps1' -Force
 ```
+Credentials are captured during first run<sup>1</sup>
 ## Usage
-Command | Module
+Command | Module Documentation
 --- | ---
 `Teams`|[Microsoft Teams](https://docs.microsoft.com/en-us/MicrosoftTeams/teams-powershell-overview)
 `Skype`|[Skype for Business](https://docs.microsoft.com/en-us/microsoft-365/enterprise/manage-skype-for-business-online-with-microsoft-365-powershell?view=o365-worldwide)
@@ -23,6 +24,5 @@ Command | Module
 `connectAll` connect to all services at once
 
 ## Notes
-Passwords are stored in the local user environment variable `$env:microsoftConnectionPass` as plain text. 
-
-Accounts with MFA not currently supported
+1. Username and password are stored in the local user environment variable `$env:microsoftConnectionPass` as plain text. 
+2. Accounts with MFA not currently supported
