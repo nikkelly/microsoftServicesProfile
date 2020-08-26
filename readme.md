@@ -18,7 +18,9 @@ Command | Module
 `SharePoint`|[SharePoint](https://docs.microsoft.com/en-us/powershell/sharepoint/sharepoint-online/introduction-sharepoint-online-management-shell?view=sharepoint-ps)
 `Security_Compliance`|[Security and Compliance Center](https://docs.microsoft.com/en-us/powershell/exchange/connect-to-scc-powershell?view=exchange-ps)
 
-Use `Disconnect` to close all active connections
+`Disconnect` close all active connections
+
+`connectAll` connect to all services at once
 
 ## Notes
 Passwords are stored in the local user environment variable `$env:microsoftConnectionPass` as plain text. 
