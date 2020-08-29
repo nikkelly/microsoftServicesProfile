@@ -28,7 +28,7 @@ else {
     Default { $firstSave = $false }
   }
   if ($firstSave) {
-    Write-Host "`n`n*** Username and password will be saved as plain text environment variables. ***`n`n"  -ForegroundColor Red -NoNewLine
+    Write-Host "`n*** Username and password will be saved as plain text environment variables. ***`n"  -ForegroundColor Red -NoNewLine
     Write-Host "Would you still like to save them?"  -ForegroundColor Yellow -NoNewLine
     Write-Host " (Y / N)" -ForegroundColor White -NoNewLine
     $saveAnswer = Read-Host -Prompt " "
@@ -64,6 +64,7 @@ else {
   # save MFA answer to a User scoped environment variable
   if ($mfaAnswer) {
     [System.Environment]::SetEnvironmentVariable('microsoftConnectionMfa', $mfaAnswer, [System.EnvironmentVariableTarget]::User)
+    $script:mfaCheck = $mfaAnswer
   }
   Clear-Host
 }
@@ -133,7 +134,8 @@ function disconnect() {
     if ($script:service -contains 'SharePoint') {
       Disconnect-SPOService
     }
-    Write-Host "Disconnected from:`n`t"$script:service.replace("|", "`n`t") -ForegroundColor Yellow
+    Write-Host "Disconnected from:"
+    Write-Host $script:service.replace("|", "`n") -ForegroundColor Yellow
     $script:service = ''
     $script:serviceCount = 0
   }
@@ -191,9 +193,6 @@ function checkInstallModule($moduleName){
         }
         start-process -filepath powershell.exe -argumentlist @('-command',$runCommand) -verb runas -wait
       }
-        Write-Host "Module "
-        Write-Host $installModule -ForegroundColor Yellow -NoNewline
-        Write-Host " installed.`n`n"
       } catch {
         Write-Host "Error during install, please try again."
       }
@@ -212,7 +211,7 @@ function Teams() {
   checkInstallModule($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
     if ($script:mfaCheck) {
-      Connect-MicrosoftTeams -AccountId $env:microsoftConnectionUser
+      Connect-MicrosoftTeams -AccountId $microsoftUser
     }
     else {
       Connect-MicrosoftTeams -Credential $creds
@@ -226,7 +225,7 @@ function AzureAD() {
   checkInstallModule($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
     if ($mfaCheck) {
-      Connect-AzureAD -AccountId $env:microsoftConnectionUser
+      Connect-AzureAD -AccountId $microsoftUser
     }
     else {
       Connect-AzureAD -Credential $creds
@@ -272,7 +271,7 @@ function Exchange() {
   if ($script:alreadyConnected = 1) {
     if ($mfaCheck) {
       checkInstallModule($MyInvocation.MyCommand.name)
-      Connect-ExchangeOnline -UserPrincipalName $env:microsoftConnectionUser -ShowProgress $true
+      Connect-ExchangeOnline -UserPrincipalName $microsoftUser -ShowProgress $true
     }
     else {
       $exoSession = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell-liveid/ -Credential $creds -Authentication Basic -AllowRedirection
@@ -305,7 +304,7 @@ function Security_Compliance() {
   checkInstallModule($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
     if ($mfaCheck) {
-      Connect-IPPSSession -UserPrincipalName $env:microsoftConnectionUser
+      Connect-IPPSSession -UserPrincipalName $microsoftUser
     }
     else {
       Connect-IPPSSession -Credential $creds -ConnectionUri https://ps.compliance.protection.outlook.com/powershell-liveid/
