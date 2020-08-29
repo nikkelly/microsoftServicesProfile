@@ -1,70 +1,36 @@
-#TODO test MFA
+#TODO See readme
 
 # Set variables
 $service = ''
 $serviceCount = 0
-
-# Check if modules are installed
-$modules = 'MicrosoftTeams', 'MSOnline', 'Microsoft.Online.SharePoint.PowerShell', 'AzureAD'
-if ($mfaCheck) {
-  $modules += 'ExchangeOnlineManagement'
-}
-$toInstall = $()
-
-foreach ($module in $modules) {
-  if (!(Get-Module -ListAvailable -Name $module )) {
-    $script:toInstall += $module + "`n`t"
-  } 
-}
-
-# List missing, ask to install, and install
-if ($script:toInstall.length -gt 0) {
-  Write-Host("Missing modules: `n`t" + $toInstall) -ForegroundColor Red -NoNewLine
-  Write-Host("`n`n Would you like to install them?`n`t ( y / n )") -ForegroundColor Yellow -NoNewLine
-  $readHost = Read-Host -Prompt " "
-  Switch ($readHost) {
-    Y { $installAnswer = $true }
-    N { $installAnswer = $false }
-    Default { $installAnswer = $false }
-  }
-  if ($installAnswer -eq $true) {
-    # Check if admin
-    if ([bool](([System.Security.Principal.WindowsIdentity]::GetCurrent()).groups -match "S-1-5-32-544")) {
-      Install-Module -Repository "PSGallery" -Name $toInstall -Force
-    }
-    else {
-      Write-Host("`nAdministrator rights are required to install modules. Please re-run as administrator.")
-      pause
-      Exit
-    }
-  }
-  elseif ($installAnswer -eq $false) {
-    Write-Host("`n`t*** Some modules are not installed - some services may not connect properly ***`n`n") -ForegroundColor Red
-  } 
-}
 
 # prompt for user username and password then save that in an environment variable
 # Check if credential exists
 if ((Test-Path env:microsoftConnectionUser) -And (Test-Path env:microsoftConnectionPass)) {
   $microsoftUser = $env:microsoftConnectionUser
   $microsoftPassword = $env:microsoftConnectionPass
+  Write-Host "Account " -NoNewLine
+  Write-Host "$microsoftUser " -ForegroundColor Green -NoNewLine
+  Write-Host "imported. `n"
 }
 else {
-  Write-Host("Microsoft connection credentials not found.")
-  Write-Host("`n`n Would you like to save them for later?`n`t ( y / n )") -ForegroundColor Yellow -NoNewLine
+  Write-Host "Microsoft connection credentials not found."
+  Write-Host "Prompting for login:"
+  $microsoftUser = Read-Host -Prompt "Enter Username"
+  $microsoftPassword = Read-Host -Prompt "Enter password"
+  # save credentials
+  Write-Host "`n`nWould you like to save them for later?" -ForegroundColor Yellow -NoNewLine
+  Write-Host " (Y / N)" -ForegroundColor White -NoNewLine
   $saveCreds = Read-Host -Prompt " "
   Switch ($saveCreds) {
     Y { $firstSave = $true }
     N { $firstSave = $false }
     Default { $firstSave = $false }
   }
-  Write-Host("Prompting for login:")
-  $microsoftUser = Read-Host -Prompt "Enter Username"
-  $microsoftPassword = Read-Host -Prompt "Enter password"
-
   if ($firstSave) {
-    Write-Host("Username and password will be saved as plain text environment variables. Would you still like to save them?") -ForegroundColor Red
-    Write-Host("( y / n )") -ForegroundColor Yellow -NoNewLine
+    Write-Host "`n`n*** Username and password will be saved as plain text environment variables. ***`n`n"  -ForegroundColor Red -NoNewLine
+    Write-Host "Would you still like to save them?"  -ForegroundColor Yellow -NoNewLine
+    Write-Host " (Y / N)" -ForegroundColor White -NoNewLine
     $saveAnswer = Read-Host -Prompt " "
     Switch ($saveAnswer) {
       Y { $saveAnswer = $true }
@@ -77,17 +43,18 @@ else {
       [System.Environment]::SetEnvironmentVariable('microsoftConnectionUser', $microsoftUser, [System.EnvironmentVariableTarget]::User)
       [System.Environment]::SetEnvironmentVariable('microsoftConnectionPass', $microsoftPassword, [System.EnvironmentVariableTarget]::User)
     }
-  }
-  # create microsoftCreds with user + pass
-  $securePwd = $microsoftPassword | ConvertTo-SecureString -AsPlainText -Force
-  $creds = New-Object System.Management.Automation.PSCredential -ArgumentList $microsoftUser, $securePwd
-}
+  }}
+# create microsoftCreds with user + pass
+$global:securePwd = $microsoftPassword | ConvertTo-SecureString -AsPlainText -Force
+$global:creds = New-Object System.Management.Automation.PSCredential -ArgumentList $microsoftUser, $securePwd
+
 # check for MFA variable
 if (Test-Path  env:microsoftConnectionMfa) {
   $mfaCheck = $env:microsoftConnectionMfa
 }
 else {
-  Write-Host "Does this account have multi-factor authentication (MFA) enabled? (Y/N)"
+  Write-Host "Does this account have multi-factor authentication (MFA) enabled? " -ForegroundColor Yellow -NoNewLine
+  Write-Host " (Y / N)" -ForegroundColor White -NoNewLine
   $mfaAnswer = Read-host " "
   Switch ($mfaAnswer) {
     Y { $mfaAnswer = $true }
@@ -98,13 +65,14 @@ else {
   if ($mfaAnswer) {
     [System.Environment]::SetEnvironmentVariable('microsoftConnectionMfa', $mfaAnswer, [System.EnvironmentVariableTarget]::User)
   }
+  Clear-Host
 }
 
 
 Write-Host "Connect to Microsoft online services with these commands: " -ForegroundColor Green
 Write-Host "`nTeams | Exchange | Skype | MSOnline (AAD V1) | AzureAD (AAD V2) | SharePoint | Security_Compliance | connectAll`n`n" -ForegroundColor Yellow
-Write-host "Disconnect" -ForegroundColor Yellow -NoNewline
-Write-Host ": close all current connections`n"
+Write-host "Disconnect: " -ForegroundColor Yellow -NoNewline
+Write-Host "close all current connections`n"
 
 # Change prompt when connecting to services
 function global:prompt() {
@@ -115,18 +83,19 @@ function global:prompt() {
     $service = $service.replace('|', '+')
   } 
 
-  # Update the prompt
-  if ($serviceCount -gt 0) {
-    Write-Host ("$service") -ForegroundColor Yellow -NoNewline 
-    Write-Host ( " | ") -ForegroundColor  White -NoNewline 
-    Write-Host ('' + $(Get-Location) + ">")  -NoNewLine 
-  }
-  else {
-    Write-Host ("$service" + $(Get-Location) + ">") -NoNewLine `
-  
-  }
-  return " "
+# Update the prompt
+if ($serviceCount -gt 0) {
+  Write-Host "$service" -ForegroundColor Yellow -NoNewline 
+  Write-Host " | " -ForegroundColor  White -NoNewline 
+  Write-Host ('' + $(Get-Location) + ">")  -NoNewLine 
 }
+else {
+  Write-Host ("$service" + $(Get-Location) + ">") -NoNewLine `
+
+}
+return " "
+}
+
 
 # Don't add serviceName if it's already there
 function checkServices($functionName) {
@@ -177,13 +146,72 @@ function connectAll() {
   SharePoint
   Security_Compliance
   AzureAD
+  MSOnline
 }
+
+function checkInstallModule($moduleName){ 
+  $installModule = Switch($moduleName){
+    Teams {'MicrosoftTeams'}
+    Exchange {'ExchangeOnlineManagement'}
+    SharePoint {'Microsoft.Online.SharePoint.PowerShell'}
+    AzureAD {'AzureAD'}
+    MSOnline {'MSOnline'}
+    Security_Compliance {'ExchangeOnlineManagement'}
+  }
+  # If module is not already installed, prompt for install 
+  if(!(Get-Module -ListAvailable -Name $installModule)){
+    Write-Host "Module " -NoNewLine
+    Write-Host "$installModule " -ForegroundColor Yellow -NoNewLine
+    Write-Host "is missing, would you like to install it? (Y / N)" -NoNewLine
+    $readHost = Read-Host -Prompt " "
+    Switch ($readHost) {
+      Y { $installAnswer = $true }
+      N { $installAnswer = $false }
+      Default { $installAnswer = $false }
+    }
+    if ($installAnswer -eq $true) {
+      # Check if admin
+      try{
+        if (([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+        # Run with -AllowClobber for AzureAD
+        if($installModule -eq 'AzureAD'){
+          Install-Module -Repository "PSGallery" -Name $installModule -AllowClobber -Force
+        } else {
+          Install-Module -Repository "PSGallery" -Name $installModule -Force
+        }
+      }
+      else {
+        Write-Host "`nAdministrator rights are required to install modules. Prompting for rights..." 
+        # pass install to an elevated PowerShell window
+        # $runCommand = Install-Module $installModule -Repository "PSGallery"
+        if($installModule -eq 'AzureAD'){
+          $runCommand = "Install-Module -Repository 'PSGallery' -Name $installModule -Force -AllowClobber"
+        } else {
+        $runCommand = "Install-Module -Repository 'PSGallery' -Name $installModule -Force"
+        }
+        start-process -filepath powershell.exe -argumentlist @('-command',$runCommand) -verb runas -wait
+      }
+        Write-Host "Module "
+        Write-Host $installModule -ForegroundColor Yellow -NoNewline
+        Write-Host " installed.`n`n"
+      } catch {
+        Write-Host "Error during install, please try again."
+      }
+   
+    }
+    if ($installAnswer -eq $false) {
+      Write-Host "`n`t*** $installModule is not installed. Please install to use $moduleName***`n`n" -ForegroundColor Red
+    } 
+  }
+}
+
 ## Start Online Service Functions 
 # Teams
 function Teams() {
   checkServices($MyInvocation.MyCommand.name)
+  checkInstallModule($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
-    if ($mfaCheck) {
+    if ($script:mfaCheck) {
       Connect-MicrosoftTeams -AccountId $env:microsoftConnectionUser
     }
     else {
@@ -195,6 +223,7 @@ function Teams() {
 
 function AzureAD() {
   checkServices($MyInvocation.MyCommand.name)
+  checkInstallModule($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
     if ($mfaCheck) {
       Connect-AzureAD -AccountId $env:microsoftConnectionUser
@@ -209,6 +238,7 @@ function AzureAD() {
 # MSOnline 
 function MSOnline() {
   checkServices($MyInvocation.MyCommand.name)
+  checkInstallModule($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
     if ($mfaCheck) {
       Connect-MsolService
@@ -223,6 +253,7 @@ function MSOnline() {
 # SharePoint
 function SharePoint() {
   checkServices($MyInvocation.MyCommand.name)
+  checkInstallModule($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
     $orgName = $microsoftUser.split('@').split('.')[1] # split the domain from $microsoftUser
     if ($mfaCheck) {
@@ -240,6 +271,7 @@ function Exchange() {
   checkServices($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
     if ($mfaCheck) {
+      checkInstallModule($MyInvocation.MyCommand.name)
       Connect-ExchangeOnline -UserPrincipalName $env:microsoftConnectionUser -ShowProgress $true
     }
     else {
@@ -270,6 +302,7 @@ function Skype() {
 
 function Security_Compliance() {
   checkServices($MyInvocation.MyCommand.name)
+  checkInstallModule($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
     if ($mfaCheck) {
       Connect-IPPSSession -UserPrincipalName $env:microsoftConnectionUser
