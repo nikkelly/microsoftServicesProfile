@@ -8,9 +8,9 @@ Connect to M365 services with a single command.
 
 Use `notepad $profile` to add this to your PowerShell profile
 
-`Import-module '<path to file>/microsoftServicesProfile.ps1' -Force
-`
-Credentials are captured during first run<sup>1</sup>
+`Import-module '<path to file>/microsoftServicesProfile.ps1' -Force`
+
+Credentials are captured during first run¹
 
 ## Usage
 
@@ -31,16 +31,40 @@ Credentials are captured during first run<sup>1</sup>
 ## Notes
 
 1. Username and password are stored in the local user environment variable `$env:microsoftConnectionPass` as plain text.
-2. Accounts with MFA not currently supported
+
+## Todo
+
+### Bugs
+
+### Test Cases
+
+Uninstall Script
+
+```PowerShell
+$modules = 'MicrosoftTeams','ExchangeOnlineManagement','Microsoft.Online.SharePoint.PowerShell','AzureAD','MSOnline'
+foreach($module in $modules){
+  Uninstall-Module $module
+}
+
+```
+
+#### Without MFA
+
+- [X] connectAll without MFA + no saved credential + moduled uninstalled
+- [X] Fix bugs before moving on
+- [ ] connectAll without MFA all modules installed
+- [ ] connectAll without MFA all modules uninstalled
+- [ ] Delete creds
+- [ ] connectAll without MFA + no saved credential
+
+#### With MFA
+
+- [ ] connectAll with MFA + no saved credential + moduled uninstalled
+- [ ] connectAll with MFA all modules installed
+- [ ] connectAll with MFA all modules uninstalled
+- [ ] Delete creds
+- [ ] connect with MFA + no saved credential
 
 ## Future branch todo
 
-- [ ] don't check for modules before function
-- [ ] include module check in the function run
-- [ ] check for admin
-- [ ] if not admin open an elevated powershell to run command
-  ```
-    start-process -filepath powershell.exe -argumentlist @('-command','Install-Module AzureAD -Repository "PSGallery"; pause') -verb runas
-    pause
-  ```
-- [ ] Check if modules need update on first run 
+- [ ] fix spacing in disconnect function
