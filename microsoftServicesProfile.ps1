@@ -17,7 +17,7 @@ else {
   Write-Host "Microsoft connection credentials not found."
   Write-Host "Prompting for login:"
   $microsoftUser = Read-Host -Prompt "Enter Username"
-  $microsoftPassword = Read-Host -Prompt "Enter password"
+  $microsoftPassword = Read-Host -Prompt "Enter password" -AsSecureString
   # save credentials
   Write-Host "`n`nWould you like to save them for later?" -ForegroundColor Yellow -NoNewLine
   Write-Host " (Y / N)" -ForegroundColor White -NoNewLine
@@ -40,8 +40,9 @@ else {
     # if user still wants to save
     # save credentials as a User scoped environment variable 
     if ($saveAnswer) {
+      $plainPwd =[Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($microsoftPassword))
       [System.Environment]::SetEnvironmentVariable('microsoftConnectionUser', $microsoftUser, [System.EnvironmentVariableTarget]::User)
-      [System.Environment]::SetEnvironmentVariable('microsoftConnectionPass', $microsoftPassword, [System.EnvironmentVariableTarget]::User)
+      [System.Environment]::SetEnvironmentVariable('microsoftConnectionPass', $plainPwd, [System.EnvironmentVariableTarget]::User)
     }
   }}
 # create microsoftCreds with user + pass
