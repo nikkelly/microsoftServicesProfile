@@ -1,5 +1,3 @@
-#TODO See readme
-
 # Set variables
 $service = ''
 $serviceCount = 0
@@ -7,47 +5,48 @@ $serviceCount = 0
 # prompt for user username and password then save that in an environment variable
 # Check if credential exists
 if ((Test-Path env:microsoftConnectionUser) -And (Test-Path env:microsoftConnectionPass)) {
-  $microsoftUser = $env:microsoftConnectionUser
+  $encryptedUser = $env:microsoftConnectionUser
   $microsoftPassword = $env:microsoftConnectionPass
-  Write-Host "Account " -NoNewLine
-  Write-Host "$microsoftUser " -ForegroundColor Green -NoNewLine
-  Write-Host "imported. `n"
+
 }
 else {
-  Write-Host "Microsoft connection credentials not found."
-  Write-Host "Prompting for login:"
+  Write-Host "Microsoft connection credentials not found.`n"
+  Write-Host "Prompting for login"
   $microsoftUser = Read-Host -Prompt "Enter Username"
-  $microsoftPassword = Read-Host -Prompt "Enter password" -AsSecureString
+  $inputPassword = Read-Host -Prompt "Enter password" -AsSecureString
   # save credentials
   Write-Host "`n`nWould you like to save them for later?" -ForegroundColor Yellow -NoNewLine
   Write-Host " (Y / N)" -ForegroundColor White -NoNewLine
   $saveCreds = Read-Host -Prompt " "
-  Switch ($saveCreds) {
-    Y { $firstSave = $true }
-    N { $firstSave = $false }
-    Default { $firstSave = $false }
+  $result = Switch ($saveCreds) {
+    Y {$true }
+    N {$false }
+    Default {$false }
   }
-  if ($firstSave) {
-    Write-Host "`n*** Username and password will be saved as plain text environment variables. ***`n"  -ForegroundColor Red -NoNewLine
-    Write-Host "Would you still like to save them?"  -ForegroundColor Yellow -NoNewLine
-    Write-Host " (Y / N)" -ForegroundColor White -NoNewLine
-    $saveAnswer = Read-Host -Prompt " "
-    Switch ($saveAnswer) {
-      Y { $saveAnswer = $true }
-      N { $saveAnswer = $false }
-      Default { $saveAnswer = $false }
+  # convert username to encrypted string
+  $secureUser = ConvertTo-SecureString $microsoftUser -AsPlainText -Force
+  $encryptedUser = ConvertFrom-SecureString $secureUser
+  # convert securestring to encrytped string
+  $microsoftPassword = ConvertFrom-SecureString $inputPassword
+  if ($result) {
+    Write-Host "`n***Username and Password will be saved to environment variables as encrypted strings***`n`n"  -ForegroundColor Red
+    # save credentials as a User scoped environment variable  
+    [System.Environment]::SetEnvironmentVariable('microsoftConnectionUser', $encryptedUser, [System.EnvironmentVariableTarget]::User)
+    [System.Environment]::SetEnvironmentVariable('microsoftConnectionPass', $microsoftPassword, [System.EnvironmentVariableTarget]::User)
     }
-    # if user still wants to save
-    # save credentials as a User scoped environment variable 
-    if ($saveAnswer) {
-      $plainPwd =[Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($microsoftPassword))
-      [System.Environment]::SetEnvironmentVariable('microsoftConnectionUser', $microsoftUser, [System.EnvironmentVariableTarget]::User)
-      [System.Environment]::SetEnvironmentVariable('microsoftConnectionPass', $plainPwd, [System.EnvironmentVariableTarget]::User)
-    }
-  }}
+  }
 # create microsoftCreds with user + pass
-$global:securePwd = $microsoftPassword | ConvertTo-SecureString -AsPlainText -Force
+# convert encrytped string password > SecureString > PlainText
+$secureUser = ConvertTo-SecureString $encryptedUser
+$microsoftUser =[Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureUser))
+# Convert encrypted string password back to secureString
+$global:securePwd = ConvertTo-SecureString $microsoftPassword
 $global:creds = New-Object System.Management.Automation.PSCredential -ArgumentList $microsoftUser, $securePwd
+
+# display found account
+Write-Host "Account " -NoNewLine
+Write-Host "$microsoftUser " -ForegroundColor Green -NoNewLine
+Write-Host "imported. `n"
 
 # check for MFA variable
 if (Test-Path  env:microsoftConnectionMfa) {
