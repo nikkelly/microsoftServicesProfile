@@ -1,16 +1,36 @@
 # Microsoft Services PowerShell Profile
 
-Connect to M365 services with a single command.
+Connect to Microsoft 365 services with a single command.
 
 ## Installation
 
+### PowerShell
+
 `git clone https://github.com/nikkelly/microsoftServicesProfile.git`
 
-Use `notepad $profile` to add this to your PowerShell profile
+Use `notepad $profile` to open your PowerShell profile
 
-`Import-module '<path to file>/microsoftServicesProfile.ps1' -Force`
+Add `Import-module '<PATH TO FILE>/microsoftServicesProfile.ps1' -Force` to the file and save.
 
-Credentials are captured during first run¹
+### Windows Terminal
+
+`git clone https://github.com/nikkelly/microsoftServicesProfile.git`
+
+Generate a new GUID in PowerShell with `New-Guid`
+
+Add new profile in Windows Terminal settings:
+
+```JSON
+{
+    // Make changes here to the M365 Admin profile
+    "guid": "<GUID FROM POWERSHELL>",
+    "name": "M365 Admin Console",
+    "commandline": "powershell.exe -noprofile -noexit -command \"invoke-expression '. ''<PATH TO FILE>/microsoftServicesProfile.ps1''' \"",
+    "icon": "<PATH TO LOGO>/m365logo.png",
+    "hidden": false,
+    "colorScheme": "Tomorrow Night Eighties"
+}
+```
 
 ## Usage
 
@@ -30,4 +50,7 @@ Credentials are captured during first run¹
 
 ## Notes
 
-1. Username and password are stored in the local user environment variable `$env:microsoftConnectionPass` as plain text.
+- Supports accounts with MFA enabled
+- Username and Password are saved to environment variables as encrypted standard strings
+- Will prompt for install if module is not already installed
+  
