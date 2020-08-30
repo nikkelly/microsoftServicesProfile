@@ -22,7 +22,6 @@ Add new profile in Windows Terminal settings:
 
 ```JSON
 {
-    // Make changes here to the M365 Admin profile
     "guid": "<GUID FROM POWERSHELL>",
     "name": "M365 Admin Console",
     "commandline": "powershell.exe -noprofile -noexit -command \"invoke-expression '. ''<PATH TO FILE>/microsoftServicesProfile.ps1''' \"",
