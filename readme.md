@@ -45,9 +45,19 @@ Add new profile in Windows Terminal settings:
 | `SharePoint`          | [SharePoint](https://docs.microsoft.com/en-us/powershell/sharepoint/sharepoint-online/introduction-sharepoint-online-management-shell?view=sharepoint-ps)          |
 | `Security_Compliance` | [Security and Compliance Center](https://docs.microsoft.com/en-us/powershell/exchange/connect-to-scc-powershell?view=exchange-ps)                                  |
 
+
 `Disconnect` close all active connections
 
 `connectAll` connect to all services at once
+
+`Remove-Account` Remove saved Account
+
+`Add-MFA` Add MFA to saved account credentials
+
+`Remove-MFA` Remove MFA from saved account credentials
+
+
+
 
 ## Notes
 

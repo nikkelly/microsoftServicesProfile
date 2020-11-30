@@ -60,7 +60,7 @@ Write-Host "`nConnect to Microsoft online services with these commands: " -Foreg
 Write-Host "Teams | Exchange | Skype | MSOnline (AAD V1) | AzureAD (AAD V2) | SharePoint | Security_Compliance | connectAll | Disconnect`n" -ForegroundColor Yellow
 
 Write-Host "Manage Account Credentials with: " -ForegroundColor Green
-Write-Host "Remove-Creds | Add-MFA | Remove-MFA `n`n" -ForegroundColor Yellow
+Write-Host "Remove-Account | Add-MFA | Remove-MFA `n`n" -ForegroundColor Yellow
 
 # Change prompt when connecting to services
 function global:prompt() {
@@ -301,7 +301,7 @@ function Security_Compliance() {
   }
 }
 
-function remove-creds(){
+function Remove-Account(){
   Write-Host "`n Removing saved username, password and MFA settings from environment variables"
   [Environment]::SetEnvironmentVariable("microsoftConnectionMFA",$null,"User")
   [Environment]::SetEnvironmentVariable("microsoftConnectionUser",$null,"User")
