@@ -2,7 +2,7 @@
 
 Connect to Microsoft 365 services with a single command.
 
-![Screenshot](https://i.imgur.com/sayOzoX.png)
+![Screenshot](https://i.imgur.com/Oxkrnnc.jpg)
 
 ## Installation
 
