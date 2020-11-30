@@ -46,34 +46,21 @@ $global:creds = New-Object System.Management.Automation.PSCredential -ArgumentLi
 # display found account
 Write-Host "Account " -NoNewLine
 Write-Host "$microsoftUser " -ForegroundColor Green -NoNewLine
-Write-Host "imported. `n"
-
-# check for MFA variable
-if (Test-Path  env:microsoftConnectionMfa) {
-  $mfaCheck = $env:microsoftConnectionMfa
-}
-else {
-  Write-Host "Does this account have multi-factor authentication (MFA) enabled? " -ForegroundColor Yellow -NoNewLine
-  Write-Host " (Y / N)" -ForegroundColor White -NoNewLine
-  $mfaAnswer = Read-host " "
-  Switch ($mfaAnswer) {
-    Y { $mfaAnswer = $true }
-    N { $mfaAnswer = $false }
-    Default { $mfaAnswer = $false }
-  }
-  # save MFA answer to a User scoped environment variable
-  if ($mfaAnswer) {
-    [System.Environment]::SetEnvironmentVariable('microsoftConnectionMfa', $mfaAnswer, [System.EnvironmentVariableTarget]::User)
-    $script:mfaCheck = $mfaAnswer
-  }
-  Clear-Host
+Write-Host "imported.`n" -NoNewLine
+if (Test-Path  env:microsoftConnectionMFA ) {
+  Write-host env:microsoftConnectionMFA
+  Write-Host "MFA status: " -ForegroundColor Yellow -NoNewLine
+  Write-Host "Enabled`n" -ForegroundColor Green -NoNewLine
+} else {
+  Write-Host "MFA status: " -ForegroundColor Yellow -NoNewLine
+  Write-host "Disabled`n" -ForegroundColor Red -NoNewLine
 }
 
+Write-Host "`nConnect to Microsoft online services with these commands: " -ForegroundColor Green
+Write-Host "Teams | Exchange | Skype | MSOnline (AAD V1) | AzureAD (AAD V2) | SharePoint | Security_Compliance | connectAll | Disconnect`n" -ForegroundColor Yellow
 
-Write-Host "Connect to Microsoft online services with these commands: " -ForegroundColor Green
-Write-Host "`nTeams | Exchange | Skype | MSOnline (AAD V1) | AzureAD (AAD V2) | SharePoint | Security_Compliance | connectAll`n`n" -ForegroundColor Yellow
-Write-host "Disconnect: " -ForegroundColor Yellow -NoNewline
-Write-Host "close all current connections`n"
+Write-Host "Manage Account Credentials with: " -ForegroundColor Green
+Write-Host "Remove-Creds | Add-MFA | Remove-MFA `n`n" -ForegroundColor Yellow
 
 # Change prompt when connecting to services
 function global:prompt() {
@@ -117,6 +104,7 @@ function Increment($functionName) {
   $script:serviceCount += 1
   Write-Host 'Connected to '$functionName -ForegroundColor Yellow
 }
+
 function disconnect() {
   if ($script:service.Length -eq 0 ) {
     Write-Host 'No services connected'
@@ -311,4 +299,21 @@ function Security_Compliance() {
     }
     Increment($MyInvocation.MyCommand.name)
   }
+}
+
+function remove-creds(){
+  Write-Host "`n Removing saved username, password and MFA settings from environment variables"
+  [Environment]::SetEnvironmentVariable("microsoftConnectionMFA",$null,"User")
+  [Environment]::SetEnvironmentVariable("microsoftConnectionUser",$null,"User")
+  [Environment]::SetEnvironmentVariable("microsoftConnectionPass",$null,"User")
+}
+
+function Add-MFA(){
+  Write-Host "Saving MFA settings to environment variable"
+  [System.Environment]::SetEnvironmentVariable('microsoftConnectionMFA', $true, [System.EnvironmentVariableTarget]::User)
+  $script:mfaCheck = $mfaAnswer
+}
+
+function Remove-MFA(){
+  [Environment]::SetEnvironmentVariable("microsoftConnectionMFA",$null,"User")
 }
