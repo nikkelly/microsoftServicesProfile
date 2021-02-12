@@ -56,7 +56,11 @@ Add new profile in Windows Terminal settings:
 
 `Remove-MFA` Remove MFA from saved account credentials
 
+`$microsoftUser` Full user name of the admin user: **admin@contoso.onmicrosoft.com**
 
+`$domain` Full domain name of the admin user: admin@**contoso.onmicrosoft.com**
+
+`$orgname` organization name pulled from admin: admin@**contoso**.onmicrosoft.com for contoso.onmicrosoft.com
 
 
 ## Notes

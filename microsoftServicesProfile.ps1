@@ -42,6 +42,8 @@ $microsoftUser =[Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.Inte
 # Convert encrypted string password back to secureString
 $global:securePwd = ConvertTo-SecureString $microsoftPassword
 $global:creds = New-Object System.Management.Automation.PSCredential -ArgumentList $microsoftUser, $securePwd
+$orgName = $microsoftUser.split('@').split('.')[1] # split the domain from $microsoftUser
+$domain = $microsoftUser.split('@')[1]
 
 # display found account
 Write-Host "Account " -NoNewLine
@@ -60,7 +62,17 @@ Write-Host "`nConnect to Microsoft online services with these commands: " -Foreg
 Write-Host "Teams | Exchange | Skype | MSOnline (AAD V1) | AzureAD (AAD V2) | SharePoint | Security_Compliance | connectAll | Disconnect`n" -ForegroundColor Yellow
 
 Write-Host "Manage Account Credentials with: " -ForegroundColor Green
-Write-Host "Remove-Account | Add-MFA | Remove-MFA `n`n" -ForegroundColor Yellow
+Write-Host "Remove-Account | Add-MFA | Remove-MFA `n" -ForegroundColor Yellow
+
+Write-Host "Helpful Variables: " -ForeGroundColor Green
+Write-Host '$microsoftUser = ' -ForeGroundColor Yellow -NoNewLine
+Write-Host $microsoftUser -ForeGroundColor White
+Write-Host '$domain = ' -ForegroundColor Yellow -NoNewLine
+Write-Host $domain -ForegroundColor White
+Write-Host '$orgName = ' -ForegroundColor Yellow -NoNewLine
+Write-Host $orgName`n`n -ForeGroundColor White
+
+
 
 # Change prompt when connecting to services
 function global:prompt() {
@@ -242,7 +254,6 @@ function SharePoint() {
   checkServices($MyInvocation.MyCommand.name)
   checkInstallModule($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
-    $orgName = $microsoftUser.split('@').split('.')[1] # split the domain from $microsoftUser
     if ($mfaCheck) {
       Connect-SPOService -Url https://$orgName-admin.sharepoint.com
     }
