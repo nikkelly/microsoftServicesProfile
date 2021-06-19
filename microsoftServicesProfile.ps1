@@ -50,9 +50,9 @@ Write-Host "Account " -NoNewLine
 Write-Host "$microsoftUser " -ForegroundColor Green -NoNewLine
 Write-Host "imported.`n" -NoNewLine
 if (Test-Path  env:microsoftConnectionMFA ) {
-  Write-host env:microsoftConnectionMFA
   Write-Host "MFA status: " -ForegroundColor Yellow -NoNewLine
   Write-Host "Enabled`n" -ForegroundColor Green -NoNewLine
+  $script:mfaCheck = $TRUE
 } else {
   Write-Host "MFA status: " -ForegroundColor Yellow -NoNewLine
   Write-host "Disabled`n" -ForegroundColor Red -NoNewLine
@@ -211,9 +211,11 @@ function Teams() {
   checkInstallModule($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
     if ($script:mfaCheck) {
-      Connect-MicrosoftTeams -AccountId $microsoftUser
+
+      Connect-MicrosoftTeams
     }
     else {
+      Write-Host "Not detecting MFA"
       Connect-MicrosoftTeams -Credential $creds
     }
     Increment($MyInvocation.MyCommand.name)
