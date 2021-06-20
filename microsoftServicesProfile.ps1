@@ -59,7 +59,7 @@ else {
 }
 
 Write-Host "`nConnect to Microsoft online services with these commands: " -ForegroundColor Green
-Write-Host "Teams | Exchange | Skype | MSOnline (AAD V1) | AzureAD (AAD V2) | SharePoint | Security_Compliance | connectAll | Disconnect`n" -ForegroundColor Yellow
+Write-Host "Teams | Exchange | MSOnline (AAD V1) | AzureAD (AAD V2) | SharePoint | Security_Compliance | connectAll | Disconnect`n" -ForegroundColor Yellow
 
 Write-Host "Manage Account Credentials with: " -ForegroundColor Green
 Write-Host "Remove-Account | Add-MFA | Remove-MFA `n" -ForegroundColor Yellow
@@ -120,8 +120,8 @@ function disconnect() {
     Write-Host 'No services connected'
   }
   else {
-    #Disconnect Exchange Online,Skype and Security & Compliance center session
-    if (($script:service -contains 'Skype') -or ($script:service -contains 'Exchange') -or ($script:service -contains 'Security_Compliance')) {
+    #Disconnect Exchange Online and Security & Compliance center session
+    if (($script:service -contains 'Exchange') -or ($script:service -contains 'Security_Compliance')) {
       Get-PSSession | Remove-PSSession
     }
     #Disconnect Teams connection
@@ -142,7 +142,6 @@ function disconnect() {
 function connectAll() {
   Teams
   Exchange
-  Skype
   SharePoint
   Security_Compliance
   AzureAD
@@ -287,24 +286,6 @@ function Exchange() {
     else {
       $exoSession = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell-liveid/ -Credential $creds -Authentication Basic -AllowRedirection
       Import-PSSession $exoSession -DisableNameChecking
-    }
-    Increment($MyInvocation.MyCommand.name)
-  }
-}
-
-# Skype Online management 
-function Skype() {
-  checkServices($MyInvocation.MyCommand.name)
-  if ($script:alreadyConnected = 1) {
-    if ($mfaCheck) {
-      Import-Module SkypeOnlineConnector
-      $sfbSession = New-CsOnlineSession
-      Import-PSSession $sfbSession
-    }
-    else {
-      Import-Module SkypeOnlineConnector
-      $sfbSession = New-CsOnlineSession -Credential $creds
-      Import-PSSession $sfbSession
     }
     Increment($MyInvocation.MyCommand.name)
   }
