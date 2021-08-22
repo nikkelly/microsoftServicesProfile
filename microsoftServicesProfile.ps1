@@ -149,6 +149,7 @@ function connectAll() {
   Security_Compliance
   AzureAD
   MSOnline
+  exchangeServer
 }
 
 function checkInstallModule($moduleName) { 
@@ -218,7 +219,6 @@ function Teams() {
       Connect-MicrosoftTeams
     }
     else {
-      Write-Host "Not detecting MFA"
       Connect-MicrosoftTeams -Credential $creds
     }
     Increment($MyInvocation.MyCommand.name)
@@ -292,32 +292,13 @@ function Exchange() {
     Increment($MyInvocation.MyCommand.name)
   }
 }
-
 # Exchange Server
-function exchangeServer{
+function exchangeServer(){
   checkServices($MyInvocation.MyCommand.name)
   if($script:alreadyConnected = 1){
     $serverFQDN = Read-Host -Prompt "Exchange Server FQDN"
     $Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri http://$serverFQDN/PowerShell/ -Authentication Kerberos -Credential $creds
     Import-PSSession $Session -DisableNameChecking
-  }
-}
-
-# Skype Online management 
-function Skype() {
-  checkServices($MyInvocation.MyCommand.name)
-  if ($script:alreadyConnected = 1) {
-    if ($script:mfaCheck) {
-      Import-Module SkypeOnlineConnector
-      $sfbSession = New-CsOnlineSession
-      Import-PSSession $sfbSession
-    }
-    else {
-      Import-Module SkypeOnlineConnector
-      $sfbSession = New-CsOnlineSession -Credential $creds
-      Import-PSSession $sfbSession
-    }
-    Increment($MyInvocation.MyCommand.name)
   }
 }
 function Security_Compliance() {
