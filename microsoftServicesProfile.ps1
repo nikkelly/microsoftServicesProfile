@@ -7,7 +7,9 @@ $serviceCount = 0
 if ((Test-Path env:microsoftConnectionUser) -And (Test-Path env:microsoftConnectionPass)) {
   $encryptedUser = $env:microsoftConnectionUser
   $microsoftPassword = $env:microsoftConnectionPass
-
+}
+if(Test-Path $env:microsoftConnectionUser){
+  $microsoftUser = $env:microsoftConnectionUser
 }
 else {
   Write-Host "Microsoft connection credentials not found.`n"
@@ -50,10 +52,9 @@ Write-Host "$microsoftUser " -ForegroundColor Green -NoNewLine
 Write-Host "imported.`n" -NoNewLine
 if (Test-Path  env:microsoftConnectionMFA ) {
   Write-Host "MFA status: " -ForegroundColor Yellow -NoNewLine
-  Write-Host "Enabled`n" -ForegroundColor Green -NoNewLine
-  $script:mfaCheck = $TRUE
-}
-else {
+  Write-Host "Enabled`n" -ForegroundColor Green -NoNewLin
+  $script:mfaCheck = $true
+} else {
   Write-Host "MFA status: " -ForegroundColor Yellow -NoNewLine
   Write-host "Disabled`n" -ForegroundColor Red -NoNewLine
 }
@@ -226,7 +227,7 @@ function AzureAD() {
   checkServices($MyInvocation.MyCommand.name)
   checkInstallModule($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
-    if ($mfaCheck) {
+    if ($script:mfaCheck) {
       Connect-AzureAD -AccountId $microsoftUser
     }
     else {
@@ -241,7 +242,7 @@ function MSOnline() {
   checkServices($MyInvocation.MyCommand.name)
   checkInstallModule($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
-    if ($mfaCheck) {
+    if ($script:mfaCheck) {
       Connect-MsolService
     }
     else {
@@ -265,11 +266,10 @@ function SharePoint() {
     $orgName = $orgName.split('-')[0]
   }
   if ($script:alreadyConnected = 1) {
-    if ($mfaCheck) {
+    if ($script:mfaCheck) {
       Connect-SPOService -Url https://$orgName-admin.sharepoint.com
-      else {
-        Connect-SPOService -Url https://$orgName-admin.sharepoint.com -Credential $creds
-      }
+    else {
+      Connect-SPOService -Url https://$orgName-admin.sharepoint.com -Credential $creds
       Increment($MyInvocation.MyCommand.name)
     }
   }
@@ -279,7 +279,7 @@ function SharePoint() {
 function Exchange() {
   checkServices($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
-    if ($mfaCheck) {
+    if ($script:mfaCheck) {
       checkInstallModule($MyInvocation.MyCommand.name)
       Connect-ExchangeOnline -UserPrincipalName $microsoftUser -ShowProgress $true
     }
@@ -290,12 +290,28 @@ function Exchange() {
     Increment($MyInvocation.MyCommand.name)
   }
 }
-
+# Skype Online management 
+function Skype() {
+  checkServices($MyInvocation.MyCommand.name)
+  if ($script:alreadyConnected = 1) {
+    if ($script:mfaCheck) {
+      Import-Module SkypeOnlineConnector
+      $sfbSession = New-CsOnlineSession
+      Import-PSSession $sfbSession
+    }
+    else {
+      Import-Module SkypeOnlineConnector
+      $sfbSession = New-CsOnlineSession -Credential $creds
+      Import-PSSession $sfbSession
+    }
+    Increment($MyInvocation.MyCommand.name)
+  }
+}
 function Security_Compliance() {
   checkServices($MyInvocation.MyCommand.name)
   checkInstallModule($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
-    if ($mfaCheck) {
+    if ($script:mfaCheck) {
       Connect-IPPSSession -UserPrincipalName $microsoftUser
     }
     else {
