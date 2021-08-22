@@ -2,7 +2,8 @@
 
 Connect to Microsoft 365 services with a single command.
 
-![Screenshot](https://i.imgur.com/Oxkrnnc.jpg)
+![image](https://user-images.githubusercontent.com/46824640/122685399-eff98d00-d1bf-11eb-89ac-3ade3aef9274.png)
+
 
 ## Installation
 
@@ -38,7 +39,6 @@ Add new profile in Windows Terminal settings:
 | Command               | Module Documentation                                                                                                                                               |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `Teams`               | [Microsoft Teams](https://docs.microsoft.com/en-us/MicrosoftTeams/teams-powershell-overview)                                                                       |
-| `Skype`               | [Skype for Business](https://docs.microsoft.com/en-us/microsoft-365/enterprise/manage-skype-for-business-online-with-microsoft-365-powershell?view=o365-worldwide) |
 | `Exchange`            | [Microsoft Exchange Online](https://docs.microsoft.com/en-us/powershell/exchange/exchange-online-powershell?view=exchange-ps)                                      |
 | `AzureAD`             | [Azure Active Directory (AAD V2 PowerShell)](https://docs.microsoft.com/en-us/powershell/module/azuread/?view=azureadps-2.0)                                       |
 | `MSOnline`            | [MSOnline (AAD V1 Powershell)](https://docs.microsoft.com/en-us/powershell/azure/active-directory/overview?view=azureadps-1.0)                                     |
@@ -60,8 +60,8 @@ Add new profile in Windows Terminal settings:
 
 `$domain` Full domain name of the admin user: **contoso.onmicrosoft.com**
 
-`$orgname` organization name pulled from admin: **contoso**
-
+## Issues and Feature Requests
+Feel free to open issues for any issues you're having or features that you'd like to see. Every use case is different, and I want to make sure that I'm accounting for as much as I can. 
 
 ## Notes
 
