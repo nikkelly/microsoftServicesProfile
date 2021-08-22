@@ -8,7 +8,9 @@ if ((Test-Path env:microsoftConnectionUser) -And (Test-Path env:microsoftConnect
   $encryptedUser = $env:microsoftConnectionUser
   $microsoftPassword = $env:microsoftConnectionPass
 }
-if((Test-Pathj env:))
+if(Test-Path $env:microsoftConnectionUser){
+  $microsoftUser = $env:microsoftConnectionUser
+}
 else {
   Write-Host "Microsoft connection credentials not found.`n"
   Write-Host "Prompting for login"
