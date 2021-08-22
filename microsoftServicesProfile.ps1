@@ -60,7 +60,7 @@ if (Test-Path  env:microsoftConnectionMFA ) {
 }
 
 Write-Host "`nConnect to Microsoft online services with these commands: " -ForegroundColor Green
-Write-Host "Teams | Exchange | MSOnline (AAD V1) | AzureAD (AAD V2) | SharePoint | Security_Compliance | connectAll | Disconnect`n" -ForegroundColor Yellow
+Write-Host "Teams | ExchangeServer | Exchange | MSOnline (AAD V1) | AzureAD (AAD V2) | SharePoint | Security_Compliance | connectAll | Disconnect`n" -ForegroundColor Yellow
 
 Write-Host "Manage Account Credentials with: " -ForegroundColor Green
 Write-Host "Remove-Account | Add-MFA | Remove-MFA `n" -ForegroundColor Yellow
@@ -122,7 +122,7 @@ function disconnect() {
   }
   else {
     #Disconnect Exchange Online and Security & Compliance center session
-    if (($script:service -contains 'Exchange') -or ($script:service -contains 'Security_Compliance')) {
+    if (($script:service -contains 'Exchange') -or ($script:service -contains 'Security_Compliance') -or ($script:service -contains 'ExchangeServer')) {
       Get-PSSession | Remove-PSSession
     }
     #Disconnect Teams connection
@@ -268,7 +268,7 @@ function SharePoint() {
   if ($script:alreadyConnected = 1) {
     if ($script:mfaCheck) {
       Connect-SPOService -Url https://$orgName-admin.sharepoint.com
-    else {
+    }else {
       Connect-SPOService -Url https://$orgName-admin.sharepoint.com -Credential $creds
       Increment($MyInvocation.MyCommand.name)
     }
@@ -290,6 +290,17 @@ function Exchange() {
     Increment($MyInvocation.MyCommand.name)
   }
 }
+
+# Exchange Server
+function exchangeServer{
+  checkServices($MyInvocation.MyCommand.name)
+  if($script:alreadyConnected = 1){
+    $serverFQDN = Read-Host -Prompt "Exchange Server FQDN"
+    $Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri http://$serverFQDN/PowerShell/ -Authentication Kerberos -Credential $creds
+    Import-PSSession $Session -DisableNameChecking
+  }
+}
+
 # Skype Online management 
 function Skype() {
   checkServices($MyInvocation.MyCommand.name)
