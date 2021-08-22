@@ -16,6 +16,7 @@ else {
   Write-Host "Prompting for login"
   $microsoftUser = Read-Host -Prompt "Enter Username"
   $inputPassword = Read-Host -Prompt "Enter password" -AsSecureString
+  $host.ui.RawUI.WindowTitle = 'Connected Account: '+$microsoftUser
   # save credentials
   Write-Host "`n`nWould you like to save them for later?" -ForegroundColor Yellow -NoNewLine
   Write-Host " (Y / N)" -ForegroundColor White -NoNewLine
@@ -45,6 +46,7 @@ $microsoftUser = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.Int
 $global:securePwd = ConvertTo-SecureString $microsoftPassword
 $global:creds = New-Object System.Management.Automation.PSCredential -ArgumentList $microsoftUser, $securePwd
 $domain = $microsoftUser.split('@')[1]
+$host.ui.RawUI.WindowTitle = 'Connected: '+$microsoftUser
 
 # display found account
 Write-Host "Account " -NoNewLine
