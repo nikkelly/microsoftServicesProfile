@@ -8,7 +8,7 @@ if ((Test-Path env:microsoftConnectionUser) -And (Test-Path env:microsoftConnect
   $encryptedUser = $env:microsoftConnectionUser
   $microsoftPassword = $env:microsoftConnectionPass
 }
-if(Test-Path $env:microsoftConnectionUser){
+if(Test-Path env:microsoftConnectionUser){
   $microsoftUser = $env:microsoftConnectionUser
 }
 else {
