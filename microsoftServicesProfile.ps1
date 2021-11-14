@@ -62,7 +62,7 @@ if (Test-Path  env:microsoftConnectionMFA ) {
 }
 
 Write-Host "`nConnect to Microsoft online services with these commands: " -ForegroundColor Green
-Write-Host "Teams | ExchangeServer | Exchange | MSOnline (AAD V1) | AzureAD (AAD V2) | SharePoint | Security_Compliance | connectAll | Disconnect`n" -ForegroundColor Yellow
+Write-Host "Teams | Intune | ExchangeServer | Exchange | MSOnline (AAD V1) | AzureAD (AAD V2) | SharePoint | Security_Compliance | connectAll | Disconnect`n" -ForegroundColor Yellow
 
 Write-Host "Manage Account Credentials with: " -ForegroundColor Green
 Write-Host "Remove-Account | Add-MFA | Remove-MFA `n" -ForegroundColor Yellow
@@ -150,6 +150,7 @@ function connectAll() {
   AzureAD
   MSOnline
   exchangeServer
+  Intune
 }
 
 function checkInstallModule($moduleName) { 
@@ -160,6 +161,7 @@ function checkInstallModule($moduleName) {
     AzureAD { 'AzureAD' }
     MSOnline { 'MSOnline' }
     Security_Compliance { 'ExchangeOnlineManagement' }
+    Intune {'Microsoft.Graph.Intune'}
   }
   # If module is not already installed, prompt for install 
   if (!(Get-Module -ListAvailable -Name $installModule)) {
@@ -310,6 +312,19 @@ function Security_Compliance() {
     }
     else {
       Connect-IPPSSession -Credential $creds -ConnectionUri https://ps.compliance.protection.outlook.com/powershell-liveid/
+    }
+    Increment($MyInvocation.MyCommand.name)
+  }
+}
+
+function Intune(){
+  checkServices($MyInvocation.MyCommand.name)
+  checkInstallModule($MyInvocation.MyCommand.name)
+  if ($script:alreadyConnected = 1){
+    if ($script:mfaCheck){
+      Connect-MSGraph
+    } else {
+      Connect-MSGraph -PSCredential $creds
     }
     Increment($MyInvocation.MyCommand.name)
   }
