@@ -8,7 +8,7 @@ if ((Test-Path env:microsoftConnectionUser) -And (Test-Path env:microsoftConnect
   $encryptedUser = $env:microsoftConnectionUser
   $microsoftPassword = $env:microsoftConnectionPass
 }
-if(Test-Path env:microsoftConnectionUser){
+if (Test-Path env:microsoftConnectionUser) {
   $microsoftUser = $env:microsoftConnectionUser
 }
 else {
@@ -16,7 +16,7 @@ else {
   Write-Host "Prompting for login"
   $microsoftUser = Read-Host -Prompt "Enter Username"
   $inputPassword = Read-Host -Prompt "Enter password" -AsSecureString
-  $host.ui.RawUI.WindowTitle = 'Connected Account: '+$microsoftUser
+  $host.ui.RawUI.WindowTitle = 'Connected Account: ' + $microsoftUser
   # save credentials
   Write-Host "`n`nWould you like to save them for later?" -ForegroundColor Yellow -NoNewLine
   Write-Host " (Y / N)" -ForegroundColor White -NoNewLine
@@ -46,7 +46,7 @@ $microsoftUser = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.Int
 $global:securePwd = ConvertTo-SecureString $microsoftPassword
 $global:creds = New-Object System.Management.Automation.PSCredential -ArgumentList $microsoftUser, $securePwd
 $domain = $microsoftUser.split('@')[1]
-$host.ui.RawUI.WindowTitle = 'Connected: '+$microsoftUser
+$host.ui.RawUI.WindowTitle = 'Connected: ' + $microsoftUser
 
 # display found account
 Write-Host "Account " -NoNewLine
@@ -56,7 +56,8 @@ if (Test-Path  env:microsoftConnectionMFA ) {
   Write-Host "MFA status: " -ForegroundColor Yellow -NoNewLine
   Write-Host "Enabled`n" -ForegroundColor Green -NoNewLin
   $script:mfaCheck = $true
-} else {
+}
+else {
   Write-Host "MFA status: " -ForegroundColor Yellow -NoNewLine
   Write-host "Disabled`n" -ForegroundColor Red -NoNewLine
 }
@@ -161,7 +162,7 @@ function checkInstallModule($moduleName) {
     AzureAD { 'AzureAD' }
     MSOnline { 'MSOnline' }
     Security_Compliance { 'ExchangeOnlineManagement' }
-    Intune {'Microsoft.Graph.Intune'}
+    Intune { 'Microsoft.Graph.Intune' }
   }
   # If module is not already installed, prompt for install 
   if (!(Get-Module -ListAvailable -Name $installModule)) {
@@ -216,38 +217,50 @@ function Teams() {
   checkServices($MyInvocation.MyCommand.name)
   checkInstallModule($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
-    if ($script:mfaCheck) {
+    try {
+      if ($script:mfaCheck) {
 
-      Connect-MicrosoftTeams
+        Connect-MicrosoftTeams
+      }
+      else {
+        Connect-MicrosoftTeams -Credential $creds
+      }
+      Increment($MyInvocation.MyCommand.name)
     }
-    else {
-      Connect-MicrosoftTeams -Credential $creds
+    catch {
+      Write-Warning 'Unable to connect to Teams'
+      Write-Warning $Error[0]
     }
-    Increment($MyInvocation.MyCommand.name)
   }
 }
 
 function AzureAD() {
   checkServices($MyInvocation.MyCommand.name)
   checkInstallModule($MyInvocation.MyCommand.name)
-  if ($script:alreadyConnected = 1) {
-    if ($script:mfaCheck) {
-      Connect-AzureAD -AccountId $microsoftUser
+  try {
+    if ($script:alreadyConnected = 1) {
+      if ($script:mfaCheck) {
+        Connect-AzureAD -AccountId $microsoftUser
+      }
+      else {
+        Connect-AzureAD -Credential $creds
+      }
+      Increment($MyInvocation.MyCommand.name)
     }
-    else {
-      Connect-AzureAD -Credential $creds
-    }
-    Increment($MyInvocation.MyCommand.name)
+  }
+  catch {
+    Write-Warning 'Unable to connec to AzureAD'
+    Write-Warning $Error[0]
   }
 }
 
 # Intune
-function Intune(){
+function Intune() {
   checkServices($MyInvocation.MyCommand.name)
   checkInstallModule($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
-    try{Connect-MSGraph}
-    catch{
+    try { Connect-MSGraph }
+    catch {
       Write-host Graph Connection Failed
       Write-Host You may need to connect with /'Connect-MSGraph -Consent'/
       Write-Host More Info: https://github.com/Microsoft/Intune-PowerShell-SDK
@@ -261,6 +274,7 @@ function MSOnline() {
   checkServices($MyInvocation.MyCommand.name)
   checkInstallModule($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
+    try{
     if ($script:mfaCheck) {
       Connect-MsolService
     }
@@ -268,6 +282,11 @@ function MSOnline() {
       Connect-MsolService -Credential $creds
     }
     Increment($MyInvocation.MyCommand.name)
+  }
+  catch {
+    Write-Warning 'Unable to connec to MSOnline'
+    Write-Warning $Error[0]
+  }
   }
 }
 
@@ -285,12 +304,17 @@ function SharePoint() {
     $orgName = $orgName.split('-')[0]
   }
   if ($script:alreadyConnected = 1) {
+    try{
     if ($script:mfaCheck) {
       Connect-SPOService -Url https://$orgName-admin.sharepoint.com
     }else {
       Connect-SPOService -Url https://$orgName-admin.sharepoint.com -Credential $creds
       Increment($MyInvocation.MyCommand.name)
     }
+  }  }
+  catch {
+    Write-Warning 'Unable to connec to SharePoint'
+    Write-Warning $Error[0]
   }
 }
 
@@ -298,6 +322,7 @@ function SharePoint() {
 function Exchange() {
   checkServices($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
+    try{
     if ($script:mfaCheck) {
       checkInstallModule($MyInvocation.MyCommand.name)
       Connect-ExchangeOnline -UserPrincipalName $microsoftUser -ShowProgress $true
@@ -306,29 +331,43 @@ function Exchange() {
       $exoSession = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell-liveid/ -Credential $creds -Authentication Basic -AllowRedirection
       Import-PSSession $exoSession -DisableNameChecking
     }
-    Increment($MyInvocation.MyCommand.name)
+    Increment($MyInvocation.MyCommand.name)  }
+    catch {
+      Write-Warning 'Unable to connec to Exchange'
+      Write-Warning $Error[0]
+    }
   }
 }
 # Exchange Server
-function exchangeServer(){
+function exchangeServer() {
   checkServices($MyInvocation.MyCommand.name)
-  if($script:alreadyConnected = 1){
+  if ($script:alreadyConnected = 1) {
+    try{
     $serverFQDN = Read-Host -Prompt "Exchange Server FQDN"
     $Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri http://$serverFQDN/PowerShell/ -Authentication Kerberos -Credential $creds
-    Import-PSSession $Session -DisableNameChecking
+    Import-PSSession $Session -DisableNameChecking  }
+    catch {
+      Write-Warning 'Unable to connec to Exchange Server'
+      Write-Warning $Error[0]
+    }
   }
 }
 function Security_Compliance() {
   checkServices($MyInvocation.MyCommand.name)
   checkInstallModule($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
+    try
     if ($script:mfaCheck) {
       Connect-IPPSSession -UserPrincipalName $microsoftUser
     }
     else {
       Connect-IPPSSession -Credential $creds -ConnectionUri https://ps.compliance.protection.outlook.com/powershell-liveid/
     }
-    Increment($MyInvocation.MyCommand.name)
+    Increment($MyInvocation.MyCommand.name)  }
+    catch {
+      Write-Warning 'Unable to connect to Security & Compliance Center'
+      Write-Warning $Error[0]
+    }
   }
 }
 
