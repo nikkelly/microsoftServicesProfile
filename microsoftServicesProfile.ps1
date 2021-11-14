@@ -48,6 +48,7 @@ $global:creds = New-Object System.Management.Automation.PSCredential -ArgumentLi
 $domain = $microsoftUser.split('@')[1]
 $host.ui.RawUI.WindowTitle = 'Connected: ' + $microsoftUser
 
+function displayCommands(){
 # display found account
 Write-Host "Account " -NoNewline
 Write-Host "$microsoftUser " -ForegroundColor Green -NoNewline
@@ -72,9 +73,13 @@ Write-Host "Helpful Variables: " -ForegroundColor Green
 Write-Host '$microsoftUser = ' -ForegroundColor Yellow -NoNewline
 Write-Host $microsoftUser -ForegroundColor White
 Write-Host '$domain = ' -ForegroundColor Yellow -NoNewline
-Write-Host $domain -ForegroundColor White
+Write-Host $domain `n -ForegroundColor White
+Write-Host "Re-display commands with: " -ForegroundColor Green -NoNewline
+Write-Host 'displayCommands' -ForegroundColor Yellow
 
+}
 
+displayCommands
 
 # Change prompt when connecting to services
 function global:prompt() {
