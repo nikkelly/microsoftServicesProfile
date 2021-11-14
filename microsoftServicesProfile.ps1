@@ -332,6 +332,19 @@ function Security_Compliance() {
   }
 }
 
+function Intune(){
+  checkServices($MyInvocation.MyCommand.name)
+  checkInstallModule($MyInvocation.MyCommand.name)
+  if ($script:alreadyConnected = 1){
+    if ($script:mfaCheck){
+      Connect-MSGraph
+    } else {
+      Connect-MSGraph -PSCredential $creds
+    }
+    Increment($MyInvocation.MyCommand.name)
+  }
+}
+
 function Remove-Account() {
   Write-Host "`n Removing saved username, password and MFA settings from environment variables"
   [Environment]::SetEnvironmentVariable("microsoftConnectionMFA", $null, "User")
