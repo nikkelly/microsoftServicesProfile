@@ -62,7 +62,7 @@ if (Test-Path  env:microsoftConnectionMFA ) {
 }
 
 Write-Host "`nConnect to Microsoft online services with these commands: " -ForegroundColor Green
-Write-Host "Teams | Intune | ExchangeServer | Exchange | MSOnline (AAD V1) | AzureAD (AAD V2) | SharePoint | Security_Compliance | connectAll | Disconnect`n" -ForegroundColor Yellow
+Write-Host "Teams | ExchangeServer | Exchange | MSOnline (AAD V1) | AzureAD (AAD V2) | SharePoint | Security_Compliance | Intune | connectAll | Disconnect`n" -ForegroundColor Yellow
 
 Write-Host "Manage Account Credentials with: " -ForegroundColor Green
 Write-Host "Remove-Account | Add-MFA | Remove-MFA `n" -ForegroundColor Yellow
@@ -236,6 +236,21 @@ function AzureAD() {
     }
     else {
       Connect-AzureAD -Credential $creds
+    }
+    Increment($MyInvocation.MyCommand.name)
+  }
+}
+
+# Intune
+function Intune(){
+  checkServices($MyInvocation.MyCommand.name)
+  checkInstallModule($MyInvocation.MyCommand.name)
+  if ($script:alreadyConnected = 1) {
+    try{Connect-MSGraph}
+    catch{
+      Write-host Graph Connection Failed
+      Write-Host You may need to connect with /'Connect-MSGraph -Consent'/
+      Write-Host More Info: https://github.com/Microsoft/Intune-PowerShell-SDK
     }
     Increment($MyInvocation.MyCommand.name)
   }
