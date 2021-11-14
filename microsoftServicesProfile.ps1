@@ -18,8 +18,8 @@ else {
   $inputPassword = Read-Host -Prompt "Enter password" -AsSecureString
   $host.ui.RawUI.WindowTitle = 'Connected Account: ' + $microsoftUser
   # save credentials
-  Write-Host "`n`nWould you like to save them for later?" -ForegroundColor Yellow -NoNewLine
-  Write-Host " (Y / N)" -ForegroundColor White -NoNewLine
+  Write-Host "`n`nWould you like to save them for later?" -ForegroundColor Yellow -NoNewline
+  Write-Host " (Y / N)" -ForegroundColor White -NoNewline
   $saveCreds = Read-Host -Prompt " "
   $result = Switch ($saveCreds) {
     Y { $true }
@@ -49,17 +49,17 @@ $domain = $microsoftUser.split('@')[1]
 $host.ui.RawUI.WindowTitle = 'Connected: ' + $microsoftUser
 
 # display found account
-Write-Host "Account " -NoNewLine
-Write-Host "$microsoftUser " -ForegroundColor Green -NoNewLine
-Write-Host "imported.`n" -NoNewLine
+Write-Host "Account " -NoNewline
+Write-Host "$microsoftUser " -ForegroundColor Green -NoNewline
+Write-Host "imported.`n" -NoNewline
 if (Test-Path  env:microsoftConnectionMFA ) {
-  Write-Host "MFA status: " -ForegroundColor Yellow -NoNewLine
+  Write-Host "MFA status: " -ForegroundColor Yellow -NoNewline
   Write-Host "Enabled`n" -ForegroundColor Green -NoNewLin
   $script:mfaCheck = $true
 }
 else {
-  Write-Host "MFA status: " -ForegroundColor Yellow -NoNewLine
-  Write-host "Disabled`n" -ForegroundColor Red -NoNewLine
+  Write-Host "MFA status: " -ForegroundColor Yellow -NoNewline
+  Write-Host "Disabled`n" -ForegroundColor Red -NoNewline
 }
 
 Write-Host "`nConnect to Microsoft online services with these commands: " -ForegroundColor Green
@@ -68,10 +68,10 @@ Write-Host "Teams | ExchangeServer | Exchange | MSOnline (AAD V1) | AzureAD (AAD
 Write-Host "Manage Account Credentials with: " -ForegroundColor Green
 Write-Host "Remove-Account | Add-MFA | Remove-MFA `n" -ForegroundColor Yellow
 
-Write-Host "Helpful Variables: " -ForeGroundColor Green
-Write-Host '$microsoftUser = ' -ForeGroundColor Yellow -NoNewLine
-Write-Host $microsoftUser -ForeGroundColor White
-Write-Host '$domain = ' -ForegroundColor Yellow -NoNewLine
+Write-Host "Helpful Variables: " -ForegroundColor Green
+Write-Host '$microsoftUser = ' -ForegroundColor Yellow -NoNewline
+Write-Host $microsoftUser -ForegroundColor White
+Write-Host '$domain = ' -ForegroundColor Yellow -NoNewline
 Write-Host $domain -ForegroundColor White
 
 
@@ -89,10 +89,10 @@ function global:prompt() {
   if ($serviceCount -gt 0) {
     Write-Host "$service" -ForegroundColor Yellow -NoNewline 
     Write-Host " | " -ForegroundColor  White -NoNewline 
-    Write-Host ('' + $(Get-Location) + ">")  -NoNewLine 
+    Write-Host ('' + $(Get-Location) + ">")  -NoNewline 
   }
   else {
-    Write-Host ("$service" + $(Get-Location) + ">") -NoNewLine `
+    Write-Host ("$service" + $(Get-Location) + ">") -NoNewline `
 
   }
   return " "
@@ -166,9 +166,9 @@ function checkInstallModule($moduleName) {
   }
   # If module is not already installed, prompt for install 
   if (!(Get-Module -ListAvailable -Name $installModule)) {
-    Write-Host "Module " -NoNewLine
-    Write-Host "$installModule " -ForegroundColor Yellow -NoNewLine
-    Write-Host "is missing, would you like to install it? (Y / N)" -NoNewLine
+    Write-Host "Module " -NoNewline
+    Write-Host "$installModule " -ForegroundColor Yellow -NoNewline
+    Write-Host "is missing, would you like to install it? (Y / N)" -NoNewline
     $readHost = Read-Host -Prompt " "
     Switch ($readHost) {
       Y { $installAnswer = $true }
@@ -197,7 +197,7 @@ function checkInstallModule($moduleName) {
           else {
             $runCommand = "Install-Module -Repository 'PSGallery' -Name $installModule -Force"
           }
-          start-process -filepath powershell.exe -argumentlist @('-command', $runCommand) -verb runas -wait
+          Start-Process -FilePath powershell.exe -ArgumentList @('-command', $runCommand) -Verb runas -Wait
         }
       }
       catch {
@@ -259,13 +259,19 @@ function Intune() {
   checkServices($MyInvocation.MyCommand.name)
   checkInstallModule($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
-    try { Connect-MSGraph }
+    try { 
+      if ($script:mfaCheck) {
+        Connect-MSGraph
+      }
+      Connect-MSGraph -PSCredential $creds
+      Increment($MyInvocation.MyCommand.name)
+    }
     catch {
-      Write-host Graph Connection Failed
+      Write-Host Graph Connection Failed
       Write-Host You may need to connect with /'Connect-MSGraph -Consent'/
       Write-Host More Info: https://github.com/Microsoft/Intune-PowerShell-SDK
     }
-    Increment($MyInvocation.MyCommand.name)
+
   }
 }
 
@@ -274,19 +280,19 @@ function MSOnline() {
   checkServices($MyInvocation.MyCommand.name)
   checkInstallModule($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
-    try{
-    if ($script:mfaCheck) {
-      Connect-MsolService
+    try {
+      if ($script:mfaCheck) {
+        Connect-MsolService
+      }
+      else {
+        Connect-MsolService -Credential $creds
+      }
+      Increment($MyInvocation.MyCommand.name)
     }
-    else {
-      Connect-MsolService -Credential $creds
+    catch {
+      Write-Warning 'Unable to connec to MSOnline'
+      Write-Warning $Error[0]
     }
-    Increment($MyInvocation.MyCommand.name)
-  }
-  catch {
-    Write-Warning 'Unable to connec to MSOnline'
-    Write-Warning $Error[0]
-  }
   }
 }
 
@@ -297,24 +303,26 @@ function SharePoint() {
   Write-Host "Prompting for SharePoint organization name"
   Write-Host "Example " -ForegroundColor Yellow -NoNewline
   Write-Host "https://tenantname-admin.sharepoint.com" -ForegroundColor White
-  Write-host "`n`n"
+  Write-Host "`n`n"
   $orgName = Read-Host -Prompt "Organization name"
   # if $orgName contains -admin this should remove it
   if ($orgName -like '*-admin') {
     $orgName = $orgName.split('-')[0]
   }
   if ($script:alreadyConnected = 1) {
-    try{
-    if ($script:mfaCheck) {
-      Connect-SPOService -Url https://$orgName-admin.sharepoint.com
-    }else {
-      Connect-SPOService -Url https://$orgName-admin.sharepoint.com -Credential $creds
-      Increment($MyInvocation.MyCommand.name)
+    try {
+      if ($script:mfaCheck) {
+        Connect-SPOService -Url https://$orgName-admin.sharepoint.com
+      }
+      else {
+        Connect-SPOService -Url https://$orgName-admin.sharepoint.com -Credential $creds
+        Increment($MyInvocation.MyCommand.name)
+      }
     }
-  }  }
-  catch {
-    Write-Warning 'Unable to connec to SharePoint'
-    Write-Warning $Error[0]
+    catch {
+      Write-Warning 'Unable to connec to SharePoint'
+      Write-Warning $Error[0]
+    }
   }
 }
 
@@ -322,16 +330,17 @@ function SharePoint() {
 function Exchange() {
   checkServices($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
-    try{
-    if ($script:mfaCheck) {
-      checkInstallModule($MyInvocation.MyCommand.name)
-      Connect-ExchangeOnline -UserPrincipalName $microsoftUser -ShowProgress $true
+    try {
+      if ($script:mfaCheck) {
+        checkInstallModule($MyInvocation.MyCommand.name)
+        Connect-ExchangeOnline -UserPrincipalName $microsoftUser -ShowProgress $true
+      }
+      else {
+        $exoSession = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell-liveid/ -Credential $creds -Authentication Basic -AllowRedirection
+        Import-PSSession $exoSession -DisableNameChecking
+      }
+      Increment($MyInvocation.MyCommand.name)  
     }
-    else {
-      $exoSession = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell-liveid/ -Credential $creds -Authentication Basic -AllowRedirection
-      Import-PSSession $exoSession -DisableNameChecking
-    }
-    Increment($MyInvocation.MyCommand.name)  }
     catch {
       Write-Warning 'Unable to connec to Exchange'
       Write-Warning $Error[0]
@@ -342,10 +351,11 @@ function Exchange() {
 function exchangeServer() {
   checkServices($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
-    try{
-    $serverFQDN = Read-Host -Prompt "Exchange Server FQDN"
-    $Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri http://$serverFQDN/PowerShell/ -Authentication Kerberos -Credential $creds
-    Import-PSSession $Session -DisableNameChecking  }
+    try {
+      $serverFQDN = Read-Host -Prompt "Exchange Server FQDN"
+      $Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri http://$serverFQDN/PowerShell/ -Authentication Kerberos -Credential $creds
+      Import-PSSession $Session -DisableNameChecking  
+    }
     catch {
       Write-Warning 'Unable to connec to Exchange Server'
       Write-Warning $Error[0]
@@ -356,31 +366,19 @@ function Security_Compliance() {
   checkServices($MyInvocation.MyCommand.name)
   checkInstallModule($MyInvocation.MyCommand.name)
   if ($script:alreadyConnected = 1) {
-    try
-    if ($script:mfaCheck) {
-      Connect-IPPSSession -UserPrincipalName $microsoftUser
+    try {
+      if ($script:mfaCheck) {
+        Connect-IPPSSession -UserPrincipalName $microsoftUser
+      }
+      else {
+        Connect-IPPSSession -Credential $creds -ConnectionUri https://ps.compliance.protection.outlook.com/powershell-liveid/
+      }
+      Increment($MyInvocation.MyCommand.name)  
     }
-    else {
-      Connect-IPPSSession -Credential $creds -ConnectionUri https://ps.compliance.protection.outlook.com/powershell-liveid/
-    }
-    Increment($MyInvocation.MyCommand.name)  }
     catch {
       Write-Warning 'Unable to connect to Security & Compliance Center'
       Write-Warning $Error[0]
     }
-  }
-}
-
-function Intune(){
-  checkServices($MyInvocation.MyCommand.name)
-  checkInstallModule($MyInvocation.MyCommand.name)
-  if ($script:alreadyConnected = 1){
-    if ($script:mfaCheck){
-      Connect-MSGraph
-    } else {
-      Connect-MSGraph -PSCredential $creds
-    }
-    Increment($MyInvocation.MyCommand.name)
   }
 }
 
