@@ -1,0 +1,42 @@
+[ ] Run individual services
+[ ] Split up functionailty of Invoke-ModuleCheck-Old
+[X] Update prompt with services
+[X] prompt user for credentials
+[2/2] save creds in an environment variable
+[3/3] Manage MFA status
+[X] Allow blank passwords
+[X] Allow blank username
+[X] Load credentials
+  - List out functions that need to run on startup
+  - Add all of those to a function Import-ProfileSettings
+    - Import-ProfileSettings runs:
+      - Import-MFAStatus
+      - Import-Credentials
+      - 
+[X] Re-Display Commands
+
+To Check
+[ ] Check that 'Helpful Variables' listed actually work 
+[ ] Can I import the colors from Get-PSreadlineOption 
+[ ] For Security_Compliance: 
+- Note: After the Connect-IPPSSession command is complete, the password key in the $UserCredential is emptied. (https://docs.microsoft.com/en-us/powershell/exchange/connect-to-scc-powershell?view=exchange-ps)
+[ ] verify that all accounts can connect with blank credentials
+  - Check that the MFA/NonMFA versions have a connection possible
+  - Otherwise need to add a 3rd option if $microsoftCredential is blank, or at least a check to the if statement if it's the same for MFA and not
+
+
+Test Accounts 
+mfaDisabled@nikkelly.onmicrosoft.com
+mfaEnabled@nikkelly.onmicrosoft.com
+
+# Notes
+if (Test-Path env:microsoftConnectionMFA){
+  Returns True
+} else {
+  Returns False
+}
+
+# scratchPad
+save password as encrypted string 
+$creds = Get-Credential
+$encryptedPass = ConvertFrom-SecureString $creds.Password 

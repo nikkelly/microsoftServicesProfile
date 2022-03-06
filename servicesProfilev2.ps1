@@ -35,11 +35,20 @@ function Invoke-DisplayCommands {
     Write-Host "`nConnect to Microsoft online services with these commands: " -ForegroundColor Green
     Write-Host "Teams | ExchangeServer | Exchange | MSOnline (AAD V1) | AzureAD (AAD V2) | SharePoint | Security_Compliance | Intune | connectAll | Disconnect`n" -ForegroundColor Yellow
     Write-Host "Manage Account Credentials with: " -ForegroundColor Green
-    Write-Host "Remove-Account | Add-MFA | Remove-MFA `n" -ForegroundColor Yellow
+    Write-Host "Add-Account | Remove-Account | Add-MFA | Remove-MFA `n" -ForegroundColor Yellow
     Write-Host "Helpful Variables" -ForegroundColor Green
-    Write-Color '$microsoftUser = ', $microsoftUser -Color Yellow, White
-    Write-Color '$domain = ', $domain - Color Yellow, White
-    Write-Color 'Re-display commands with: ', 'Invoke-DisplayCommands' -Color Green, White
+    if ($null -eq $microsoftUser) {
+        Write-Color '$microsoftUser = ', 'Not set' -Color Yellow, White
+    } else {
+        Write-Color '$microsoftUser = ', $microsoftUser -Color Yellow, White
+
+    }
+    if ($null -eq $domain) {
+        Write-Color '$domain = ', "Not set" -Color Yellow, White
+    } else {
+        Write-Color '$domain = ', $domain -Color Yellow, White
+    }
+    Write-Color "`nRe-display commands with: ", 'Invoke-DisplayCommands' -Color Green, White
 }
 function Import-Domain {
     # Split the domain from $microsoftUser
@@ -58,6 +67,22 @@ function Set-Domain {
         Exit
     }
     return $domain
+}
+function Add-Account {
+    $microsoftCredential = Get-Credentials
+    $saveCreds = Read-Host "Would you like to save this account for later? [Y/N]"
+    if ($saveCreds.ToUpper() -ne "Y") {
+        Write-Host "Credentials not saved" -ForegroundColor Yellow
+    } else {
+        try {
+            Export-Credentials $microsoftCredential
+            Write-Host "Credentials saved to environment variables" -ForegroundColor Yellow
+        } catch{
+            Write-Warning "Unable to add account"
+            Write-Warning $Error[0]
+        }
+    }
+    return $microsoftCredential
 }
 # [X] remove the environment variable
 function Remove-Account {
@@ -80,9 +105,21 @@ function Remove-Account {
 function Invoke-DisplayAccount {
     [Parameter(Mandatory)]$microsoftUser
     [Parameter(Mandatory)][String]$microsoftPass
-    Write-Color "Account: ", $microsftUser -Color White, Green
-    Write-Color "Password Imported: ", $microsoftPass -Color White, Green
-    Write-Color "Domain: ", $domain -Color White, Green
+    $microsoftPassLoaded = $false
+    $microsoftUserLoaded = $false
+    if ($null -eq $microsoftUser) {
+        Write-Color "Account Imported: ", $microsoftUserLoaded -Color White, Red
+    } else {
+        $microsoftUserLoaded = $True
+        Write-Color "Account Imported: ", $microsoftUserLoaded -Color White, Green
+    }
+    if ($null -eq $microsoftPass) {
+        Write-Color "Password Imported: ", $microsoftPassLoaded -Color White, Red
+    } else {
+        $microsoftPassLoaded = $True
+        Write-Color "Password Imported: ", $microsoftPassLoaded -Color White, Green
+    }
+
 }
 Function Get-IsAdministrator {
     <#
@@ -156,7 +193,7 @@ function Install-ModuleFromGallery {
 #         If ($answer.ToUpper() -ne "Y") {
 #             break
 #         }
-#         if (Get-IsAdministrator -eq $True) {
+#         if (Get-IsAdministrator -eq $true) {
 #             foreach ($missing in $missingModules) {
 #                 Install-ModuleFromGallery -Module $missing
 #             }
@@ -202,72 +239,85 @@ function Update-Prompt {
 }
 # [X] Prompt user for credentials
 function Get-Credentials {
+    Write-Host "Prompting user for credential input"
     $microsoftCredential = Get-Credential
     return $microsoftCredential
 }
 # [X] Save credentials to environment variables
 function Export-Credentials {
     Param (
-        [Parameter(Mandatory)][SecureString]$microsoftCredential
+        [Parameter(Mandatory)]$microsoftCredential
     )
     # Save Username
     if ($microsoftCredential.Username.Length -eq 0) {
         Write-Host "Username is blank - skipping save" -ForegroundColor Yellow
+        $userSaved = "No"
+        $userSavedColor = "Red"
     } else {
         $encryptedUser = $microsoftCredential.Username | ConvertTo-SecureString -AsPlainText -Force | ConvertFrom-SecureString #Saves User as numbers 
         [System.Environment]::SetEnvironmentVariable('microsoftConnectionUser', $encryptedUser, [System.EnvironmentVariableTarget]::User)
+        $userSaved = "Yes"
+        $userSavedColor = "Green"
     }
     # Save Password
     if ($microsoftCredential.Password.Length -eq 0) {
         Write-Host "Password is blank - skipping save" -ForegroundColor Yellow
+        $passwordSaved = "No"
+        $passwordSavedColor = "Red"
     } else {
-        $microsoftCredential = Get-Credential
+        #DEBUG $microsoftCredential = Get-Credential
         $encryptedPass = ConvertFrom-SecureString $microsoftCredential.Password 
-        [Sustem.Environment]::SetEnvironmentVariable('microsoftConnectionPass', $encryptedPass, [System.environmentVariableTarget]::User)
+        [System.Environment]::SetEnvironmentVariable('microsoftConnectionPass', $encryptedPass, [System.environmentVariableTarget]::User)
+        $passwordSaved = "Yes"
+        $passwordSavedColor = "Green"
     }
-    Write-Host "`tPlease reload PowerShell for changes to take effect." -ForegroundColor Green
+    Write-Color "User Saved: $($userSaved)" -Color Yellow, $userSavedColor
+    Write-Color "Password Saved: $($passwordSaved)" -Color Yellow, $passwordSavedColor
+    Write-Host "`n`tPlease reload PowerShell for changes to take effect.`n" -ForegroundColor Green
 }
 # [X] Check MFA Status
 function Import-MFAStatus { 
     # Check for saved password
-    if (-not [Environment]::GetEnvironmentVariable('microsoftConnectionMfa', 'User')) {
-        "Microsoft connection MFA status not found."
-        $mfaStatus = false
-    } else {
-        $mfaStatus = True
-    }
+    # if (-not [Environment]::GetEnvironmentVariable('microsoftConnectionMfa', 'User')) {
+    #     "Microsoft connection MFA status not found."
+    #     $mfaStatus = $false
+    # } else {
+    #     $mfaStatus = $true
+    # }
+    $mfaStatus = Test-Path env:microsoftConnectionMFA
     return $mfaStatus
 }
 function Add-MFA() {
     Write-Host "Saving MFA settings to environment variable"
     [System.Environment]::SetEnvironmentVariable('microsoftConnectionMFA', $true, [System.EnvironmentVariableTarget]::User)
-    $mfaStatus = True
+    $mfaStatus = $true
     return $mfaStatus
 }
   
 function Remove-MFA() {
     [Environment]::SetEnvironmentVariable("microsoftConnectionMFA", $null, "User")
-    $mfaStatus = False 
+    $mfaStatus = $false 
     return $mfaStatus
 }
 
 #! 2.22 broken [X] Load credentials 
 function Import-Credentials {
-    
+    $microsoftUser = $null
+    $microsoftPass = $null
+    $microsoftCredential = $null
     #! Debug start
     # Check for saved username
     if (-not [Environment]::GetEnvironmentVariable('microsoftConnectionUser', 'User')) {
-        "Microsoft connection user not found."
+        $microsoftUser = $null
     } else {
         $microsoftUser = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR((ConvertTo-SecureString ($env:microsoftconnectionUser))))
     }
     # Check for saved password
-    if (-not [Environment]::GetEnvironmentVariable('microsoftConnectionPass', 'User')) {
-        "Microsoft connection password not found."
-    } else {
+    if ([Environment]::GetEnvironmentVariable('microsoftConnectionPass', 'User')) {
         $microsoftPass = ConvertTo-SecureString ($env:microsoftConnectionPass)
         $microsoftCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $microsoftUser, $microsoftPass
-        return $microsoftCredential
+    } else {
+        $microsoftPass = $null   
     }
     #! Debug End 
     # #NOTE 3.3.22 code below is working
@@ -281,6 +331,7 @@ function Import-Credentials {
     # } catch {
     #     #! need to handle blank password and blank username
     # }
+    return $microsoftUser, $microsoftPass, $microsoftCredential
 }
 
 Function Invoke-ConnectedServiceCheck {
@@ -302,7 +353,7 @@ function Invoke-ModuleCheck {
             Write-Color "Module ", $moduleName, " not installed." -Color White, Yellow, White
             break
         }
-        if (Get-IsAdministrator -eq $True) {
+        if (Get-IsAdministrator -eq $true) {
             Install-ModuleFromGallery -Module $moduename
         } else {
             Write-Error "Load PowerShell as administrator in order to install modules"
@@ -450,9 +501,9 @@ function Intune {
     Invoke-ConnectedServiceCheck($MyInvocation.MyCommand.Name)
     # Check if module is installed
     Invoke-ModuleCheck('Microsoft.Graph.Intune')
-    if ($connectedServices -contains 'MSOnline'){
-        Write-Color "*************","Importing the MSOnline cmdlets before importing this Intune module will cause errors. Please use the AzureAD module instead, as the MSOnline module is deprecated.
-        If you absolutely must use the MSOnline module, it should be imported AFTER the Intune module. Note, however, that this is not officially supported. More info available here:","https://github.com/Microsoft/Intune-PowerShell-SDK","*************" -Color Yellow,White,Cyan,Yellow
+    if ($connectedServices -contains 'MSOnline') {
+        Write-Color "*************", "Importing the MSOnline cmdlets before importing this Intune module will cause errors. Please use the AzureAD module instead, as the MSOnline module is deprecated.
+        If you absolutely must use the MSOnline module, it should be imported AFTER the Intune module. Note, however, that this is not officially supported. More info available here:", "https://github.com/Microsoft/Intune-PowerShell-SDK", "*************" -Color Yellow, White, Cyan, Yellow
     }
     try {
         Connect-MSGraph PSCredential $microsoftCredential        
@@ -542,3 +593,7 @@ if ($uninstall.IsPresent) {
 
 # Import profile settings
 Start-Profile
+
+
+#! Debug Starting
+# Write-Host "Connected Services: " $connectedServices
