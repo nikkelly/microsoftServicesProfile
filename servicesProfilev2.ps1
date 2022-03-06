@@ -37,52 +37,52 @@ function Invoke-DisplayCommands {
     Write-Host "Manage Account Credentials with: " -ForegroundColor Green
     Write-Host "Add-Account | Remove-Account | Add-MFA | Remove-MFA `n" -ForegroundColor Yellow
     Write-Host "Helpful Variables" -ForegroundColor Green
-    if ($null -eq $microsoftUser) {
-        Write-Color '$microsoftUser = ', 'Not set' -Color Yellow, White
+    if ($null -eq $script:microsoftUser) {
+        Write-Color '$script:microsoftUser = ', 'Not set' -Color Yellow, White
     } else {
-        Write-Color '$microsoftUser = ', $microsoftUser -Color Yellow, White
+        Write-Color '$script:microsoftUser = ', $script:microsoftUser -Color Yellow, White
 
     }
-    if ($null -eq $domain) {
-        Write-Color '$domain = ', "Not set" -Color Yellow, White
+    if ($null -eq $script:domain) {
+        Write-Color '$script:domain = ', "Not set" -Color Yellow, White
     } else {
-        Write-Color '$domain = ', $domain -Color Yellow, White
+        Write-Color '$script:domain = ', $script:domain -Color Yellow, White
     }
     Write-Color "`nRe-display commands with: ", 'Invoke-DisplayCommands' -Color Green, White
 }
 function Import-Domain {
-    # Split the domain from $microsoftUser
-    if ($microsoftUser) {
-        $domain = $microsoftUser.Split('@') | Select-Object -Last 1
+    # Split the domain from $script:microsoftUser
+    if ($script:microsoftUser) {
+        $script:domain = $script:microsoftUser.Split('@') | Select-Object -Last 1
     } else {
-        $domain = $null
+        $script:domain = $null
     }
-    return $domain
+    return $script:domain
 }
 function Set-Domain {
-    $domain = Read-Host "Enter your domain:"
-    if ($domain.Length -eq 0) {
+    $script:domain = Read-Host "Enter your domain:"
+    if ($script:domain.Length -eq 0) {
         Write-Host "Domain cannot be blank."
-        $domain = $null
+        $script:domain = $null
         Exit
     }
-    return $domain
+    return $script:domain
 }
 function Add-Account {
-    $microsoftCredential = Get-Credentials
+    $script:microsoftCredential = Get-Credentials
     $saveCreds = Read-Host "Would you like to save this account for later? [Y/N]"
     if ($saveCreds.ToUpper() -ne "Y") {
         Write-Host "Credentials not saved" -ForegroundColor Yellow
     } else {
         try {
-            Export-Credentials $microsoftCredential
+            Export-Credentials $script:microsoftCredential
             Write-Host "Credentials saved to environment variables" -ForegroundColor Yellow
         } catch{
             Write-Warning "Unable to add account"
             Write-Warning $Error[0]
         }
     }
-    return $microsoftCredential
+    return $script:microsoftCredential
 }
 # [X] remove the environment variable
 function Remove-Account {
@@ -97,27 +97,27 @@ function Remove-Account {
     if ([Environment]::GetEnvironmentVariable('microsoftConnectionMfa', 'User')) {
         [Environment]::SetEnvironmentVariable("microsoftConnectionMfa", $null, "User")
     } 
-    $microsoftUser = $null
-    $microsoftPass = $null
+    $script:microsoftUser = $null
+    $script:microsoftPass = $null
     $mfaStatus = $null
-    return $microsoftUser, $microsoftPass, $mfaStatus
+    return $script:microsoftUser, $script:microsoftPass, $mfaStatus
 }
 function Invoke-DisplayAccount {
-    [Parameter(Mandatory)]$microsoftUser
-    [Parameter(Mandatory)][String]$microsoftPass
-    $microsoftPassLoaded = $false
-    $microsoftUserLoaded = $false
-    if ($null -eq $microsoftUser) {
-        Write-Color "Account Imported: ", $microsoftUserLoaded -Color White, Red
+    [Parameter(Mandatory)]$script:microsoftUser
+    [Parameter(Mandatory)][String]$script:microsoftPass
+    $script:microsoftPassLoaded = $false
+    $script:microsoftUserLoaded = $false
+    if ($null -eq $script:microsoftUser) {
+        Write-Color "Account Imported: ", $script:microsoftUserLoaded -Color White, Red
     } else {
-        $microsoftUserLoaded = $True
-        Write-Color "Account Imported: ", $microsoftUserLoaded -Color White, Green
+        $script:microsoftUserLoaded = $True
+        Write-Color "Account Imported: ", $script:microsoftUserLoaded -Color White, Green
     }
-    if ($null -eq $microsoftPass) {
-        Write-Color "Password Imported: ", $microsoftPassLoaded -Color White, Red
+    if ($null -eq $script:microsoftPass) {
+        Write-Color "Password Imported: ", $script:microsoftPassLoaded -Color White, Red
     } else {
-        $microsoftPassLoaded = $True
-        Write-Color "Password Imported: ", $microsoftPassLoaded -Color White, Green
+        $script:microsoftPassLoaded = $True
+        Write-Color "Password Imported: ", $script:microsoftPassLoaded -Color White, Green
     }
 
 }
@@ -240,33 +240,33 @@ function Update-Prompt {
 # [X] Prompt user for credentials
 function Get-Credentials {
     Write-Host "Prompting user for credential input"
-    $microsoftCredential = Get-Credential
-    return $microsoftCredential
+    $script:microsoftCredential = Get-Credential
+    return $script:microsoftCredential
 }
 # [X] Save credentials to environment variables
 function Export-Credentials {
     Param (
-        [Parameter(Mandatory)]$microsoftCredential
+        [Parameter(Mandatory)]$script:microsoftCredential
     )
     # Save Username
-    if ($microsoftCredential.Username.Length -eq 0) {
+    if ($script:microsoftCredential.Username.Length -eq 0) {
         Write-Host "Username is blank - skipping save" -ForegroundColor Yellow
         $userSaved = "No"
         $userSavedColor = "Red"
     } else {
-        $encryptedUser = $microsoftCredential.Username | ConvertTo-SecureString -AsPlainText -Force | ConvertFrom-SecureString #Saves User as numbers 
+        $encryptedUser = $script:microsoftCredential.Username | ConvertTo-SecureString -AsPlainText -Force | ConvertFrom-SecureString #Saves User as numbers 
         [System.Environment]::SetEnvironmentVariable('microsoftConnectionUser', $encryptedUser, [System.EnvironmentVariableTarget]::User)
         $userSaved = "Yes"
         $userSavedColor = "Green"
     }
     # Save Password
-    if ($microsoftCredential.Password.Length -eq 0) {
+    if ($script:microsoftCredential.Password.Length -eq 0) {
         Write-Host "Password is blank - skipping save" -ForegroundColor Yellow
         $passwordSaved = "No"
         $passwordSavedColor = "Red"
     } else {
-        #DEBUG $microsoftCredential = Get-Credential
-        $encryptedPass = ConvertFrom-SecureString $microsoftCredential.Password 
+        #DEBUG $script:microsoftCredential = Get-Credential
+        $encryptedPass = ConvertFrom-SecureString $script:microsoftCredential.Password 
         [System.Environment]::SetEnvironmentVariable('microsoftConnectionPass', $encryptedPass, [System.environmentVariableTarget]::User)
         $passwordSaved = "Yes"
         $passwordSavedColor = "Green"
@@ -302,36 +302,36 @@ function Remove-MFA() {
 
 #! 2.22 broken [X] Load credentials 
 function Import-Credentials {
-    $microsoftUser = $null
-    $microsoftPass = $null
-    $microsoftCredential = $null
+    $script:microsoftUser = $null
+    $script:microsoftPass = $null
+    $script:microsoftCredential = $null
     #! Debug start
     # Check for saved username
     if (-not [Environment]::GetEnvironmentVariable('microsoftConnectionUser', 'User')) {
-        $microsoftUser = $null
+        $script:microsoftUser = $null
     } else {
-        $microsoftUser = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR((ConvertTo-SecureString ($env:microsoftconnectionUser))))
+        $script:microsoftUser = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR((ConvertTo-SecureString ($env:microsoftconnectionUser))))
     }
     # Check for saved password
     if ([Environment]::GetEnvironmentVariable('microsoftConnectionPass', 'User')) {
-        $microsoftPass = ConvertTo-SecureString ($env:microsoftConnectionPass)
-        $microsoftCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $microsoftUser, $microsoftPass
+        $script:microsoftPass = ConvertTo-SecureString ($env:microsoftConnectionPass)
+        $script:microsoftCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $script:microsoftUser, $script:microsoftPass
     } else {
-        $microsoftPass = $null   
+        $script:microsoftPass = $null   
     }
     #! Debug End 
     # #NOTE 3.3.22 code below is working
     # # Load User
-    # $microsoftUser = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR((ConvertTo-SecureString ($env:microsoftconnectionUser))))
+    # $script:microsoftUser = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR((ConvertTo-SecureString ($env:microsoftconnectionUser))))
     # # Load Password
     # try {
-    #     $microsoftPass = ConvertTo-SecureString ($env:microsoftConnectionPass)
-    #     $microsoftCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $microsoftUser, $microsoftPass
-    #     return $microsoftCredential
+    #     $script:microsoftPass = ConvertTo-SecureString ($env:microsoftConnectionPass)
+    #     $script:microsoftCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $script:microsoftUser, $script:microsoftPass
+    #     return $script:microsoftCredential
     # } catch {
     #     #! need to handle blank password and blank username
     # }
-    return $microsoftUser, $microsoftPass, $microsoftCredential
+    return $script:microsoftUser, $script:microsoftPass, $script:microsoftCredential
 }
 
 Function Invoke-ConnectedServiceCheck {
@@ -377,7 +377,7 @@ function Teams {
 
         } else { 
             # Connect without MFA enforcedd
-            Connect-MicrosoftTeams -Credential $microsoftCredential
+            Connect-MicrosoftTeams -Credential $script:microsoftCredential
         }
         return $connectedServices
     } catch {
@@ -391,7 +391,7 @@ function ExchangeServer {
     Invoke-ConnectedServiceCheck($MyInvocation.MyCommand.Name) 
     try {
         $serverFQDN = Read-Host -Prompt "Enter Exchange Server FQDN: "
-        $exchangeServerSession = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri http://$serverFQDN/PowerShell/ -Authentication Kerberos -Credential $microsoftCredential
+        $exchangeServerSession = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri http://$serverFQDN/PowerShell/ -Authentication Kerberos -Credential $script:microsoftCredential
         Import-PSSession $exchangeServerSession -DisableNameChecking  
         $connectedServices += 'ExchangeServer'
 
@@ -408,7 +408,7 @@ function Exchange {
     Invoke-ModuleCheck('ExchangeOnlineManagement')
     try {
         # Exchange Online V2 uses modern auth by default and supports MFA
-        Connect-ExchangeOnline -UserPrincipalName $microsoftCredential.UserName
+        Connect-ExchangeOnline -UserPrincipalName $script:microsoftCredential.UserName
         $connectedServices += 'Exchange'
 
     } catch {
@@ -424,7 +424,7 @@ function MSOnline {
     Invoke-ModuleCheck('MSOnline')
     try {
         # Doesn't appear to be any need for differnt auth types
-        Connect-MsolService -Credential $microsoftCredential
+        Connect-MsolService -Credential $script:microsoftCredential
         $connectedServices += 'MSOnline'
 
     } catch {
@@ -439,7 +439,7 @@ function AzureAD {
     # Check if module is installed
     Invoke-ModuleCheck('AzureAD')
     try {
-        Connect-AzureAD -Credential $microsoftCredential
+        Connect-AzureAD -Credential $script:microsoftCredential
         $connectedServices += 'AzureAD'
         
     } catch {
@@ -467,7 +467,7 @@ function SharePoint {
             Connect-SPOService -Url https://$orgName-admin.sharepoint.com
         } else { 
             # Connect without MFA enforced
-            Connect-SPOService -Url https://$orgName-admin.sharepoint.com -Credential $microsoftCredential
+            Connect-SPOService -Url https://$orgName-admin.sharepoint.com -Credential $script:microsoftCredential
         }
         $connectedServices += 'SharePoint'
     } catch {
@@ -484,10 +484,10 @@ function Security_Compliance {
     try {
         if ($script:mfaStatus) {
             # Connect with MFA enforced
-            Connect-IPPSSession -UserPrincipalName $microsoftCredential.Username
+            Connect-IPPSSession -UserPrincipalName $script:microsoftCredential.Username
         } else { 
             # Connect without MFA enforced
-            Connect-IPPSSession -UserPrincipalName $microsoftCredential
+            Connect-IPPSSession -UserPrincipalName $script:microsoftCredential
         }
         $connectedServices += 'Security_Compliance'
     } catch {
@@ -506,7 +506,7 @@ function Intune {
         If you absolutely must use the MSOnline module, it should be imported AFTER the Intune module. Note, however, that this is not officially supported. More info available here:", "https://github.com/Microsoft/Intune-PowerShell-SDK", "*************" -Color Yellow, White, Cyan, Yellow
     }
     try {
-        Connect-MSGraph PSCredential $microsoftCredential        
+        Connect-MSGraph PSCredential $script:microsoftCredential        
         # Not sure if this will allow for MFA and not 
         # if ($script:mfaStatus) {
         #     # Connect with MFA enforced
