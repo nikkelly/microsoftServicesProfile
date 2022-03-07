@@ -20,12 +20,15 @@ https://docs.microsoft.com/en-us/powershell/scripting/developer/module/how-to-wr
     Set-ExeuctionPolicy RemoteSigned
     
 #>
-$version = "2.0"
 
 param (
     [Switch]$install,
     [Switch]$uninstall
 )
+
+$version = "2.0"
+$foregroundColor = $host.UI.RawUI.ForegroundColor
+
 function Write-Color([String[]]$Text, [ConsoleColor[]]$Color) {
     for ($i = 0; $i -lt $Text.Length; $i++) {
         Write-Host $Text[$i] -Foreground $Color[$i] -NoNewline
@@ -40,17 +43,17 @@ function Invoke-DisplayCommands {
     Write-Host "Add-Account | Remove-Account | Add-MFA | Remove-MFA `n" -ForegroundColor Yellow
     Write-Host "Helpful Variables" -ForegroundColor Green
     if ($null -eq $script:microsoftUser) {
-        Write-Color '$microsoftUser = ', 'Not set' -Color Yellow, White
+        Write-Color '$microsoftUser = ', 'Not set' -Color Yellow, $foregroundColor
     } else {
-        Write-Color '$microsoftUser = ', $script:microsoftUser -Color Yellow, White
+        Write-Color '$microsoftUser = ', $script:microsoftUser -Color Yellow, $foregroundColor
 
     }
     if ($null -eq $script:domain) {
-        Write-Color '$domain = ', "Not set" -Color Yellow, White
+        Write-Color '$domain = ', "Not set" -Color Yellow, $foregroundColor
     } else {
-        Write-Color '$domain = ', $script:domain -Color Yellow, White
+        Write-Color '$domain = ', $script:domain -Color Yellow, $foregroundColor
     }
-    Write-Color "`nRe-display commands with: ", 'Invoke-DisplayCommands' -Color Green, White
+    Write-Color "`nRe-display commands with: ", 'Invoke-DisplayCommands' -Color Green, $foregroundColor
 }
 function Import-Domain {
     # Split the domain from $script:microsoftUser
@@ -71,37 +74,50 @@ function Set-Domain {
     # return $script:domain
 }
 function Add-Account {
-    $script:microsoftCredential = Get-Credentials
-    $saveCreds = Read-Host "Would you like to save this account for later? [Y/N]"
+    Get-Credentials
+    if (($script:blankPassword -eq $true) -or ($script:blankUser -eq $true)) {
+        Write-Warning "One of your credentials is blank - please verify this is intended."
+    }
+    $saveCreds = $(Write-Color "`tWould you like to save this account for later? [", "Y", "/", "N", "]" -Color Yellow, Green, Yellow, Red, Yellow; Read-Host)
     if ($saveCreds.ToUpper() -ne "Y") {
-        Write-Host "Credentials not saved" -ForegroundColor Yellow
+        Write-Host "`tCredentials not saved" -ForegroundColor Red
     } else {
         try {
             Export-Credentials $script:microsoftCredential
-            Write-Host "Credentials saved to environment variables" -ForegroundColor Yellow
-        } catch{
+            # Write-Host "`tCredentials saved to environment variables" -ForegroundColor Yellow
+        } catch {
             Write-Warning "Unable to add account"
             Write-Warning $Error[0]
         }
     }
-    # return $script:microsoftCredential
 }
 # [X] remove the environment variable
 function Remove-Account {
     # Delete environment variable 
-    if (Test-Path env:microsoftConnectionUser) {
-        [Environment]::SetEnvironmentVariable("microsoftConnectionUser", $null, "User")
-        Write-Color "`tMicrosoft connection user removed" -ForegroundColor Yellow
+    try {
+        if (Test-Path env:microsoftConnectionUser) {
+            [Environment]::SetEnvironmentVariable("microsoftConnectionUser", $null, "User")
+            Write-Color "`tMicrosoft connection user removed" -ForegroundColor Yellow
+        } 
+    } catch { 
+        # Intentionally blank
     } 
-    if (Test-Path env:microsoftConnectionPass) {
-        [Environment]::SetEnvironmentVariable("microsoftConnectionPass", $null, "User")
-        Write-Color "`tMicrosoft connection password removed" -ForegroundColor Yellow
-    } 
-    
-    if (Test-Path env:microsoftConnectionMFA) {
-        [Environment]::SetEnvironmentVariable("microsoftConnectionMfa", $null, "User")
-        Write-Color "`tMicrosoft connection MFA removed" -ForegroundColor Yellow
-    } 
+    try {
+        if (Test-Path env:microsoftConnectionPass) {
+            [Environment]::SetEnvironmentVariable("microsoftConnectionPass", $null, "User")
+            Write-Color "`tMicrosoft connection password removed" -ForegroundColor Yellow
+        } 
+    } catch { 
+        # Intentionally Blank
+    }
+    try { 
+        if (Test-Path env:microsoftConnectionMFA) {
+            [Environment]::SetEnvironmentVariable("microsoftConnectionMfa", $null, "User")
+            Write-Color "`tMicrosoft connection MFA removed" -ForegroundColor Yellow
+        } 
+    } catch { 
+        # Intentionally Blank
+    }
     $script:microsoftUser = $null
     $script:microsoftPass = $null
     $script:mfaStatus = $null
@@ -114,16 +130,16 @@ function Invoke-DisplayAccount {
     $script:microsoftPassLoaded = $false
     $script:microsoftUserLoaded = $false
     if ($null -eq $script:microsoftUser) {
-        Write-Color "Account Imported: ", $script:microsoftUserLoaded -Color White, Red
+        Write-Color "Account Imported: ", $script:microsoftUserLoaded -Color $foregroundColor, Red
     } else {
         $script:microsoftUserLoaded = $True
-        Write-Color "Account Imported: ", $script:microsoftUserLoaded -Color White, Green
+        Write-Color "Account Imported: ", $script:microsoftUserLoaded -Color $foregroundColor, Green
     }
     if ($null -eq $script:microsoftPass) {
-        Write-Color "Password Imported: ", $script:microsoftPassLoaded -Color White, Red
+        Write-Color "Password Imported: ", $script:microsoftPassLoaded -Color $foregroundColor, Red
     } else {
         $script:microsoftPassLoaded = $True
-        Write-Color "Password Imported: ", $script:microsoftPassLoaded -Color White, Green
+        Write-Color "Password Imported: ", $script:microsoftPassLoaded -Color $foregroundColor, Green
     }
 
 }
@@ -190,7 +206,7 @@ function Install-ModuleFromGallery {
 #     $missingModules = @()
 #     foreach ($m in $requiredModules) {
 #         if (!(Get-Module -Name $m -ListAvailable)) {
-#             Write-Color "Module ", $m, " is missing." -Color White, Yellow, White
+#             Write-Color "Module ", $m, " is missing." -Color $foregroundColor, Yellow, $foregroundColor
 #             $missingModules += $m
 #         }
 #     }
@@ -228,8 +244,8 @@ function Import-ProfileSettings {
 }
 function Start-Profile {
     # These functions will run on ever new profile load 
-    Clear-Host
-    Write-Host "Microsoft Services Profile v$($version) loaded"
+    # Clear-Host
+    Write-Color "--==Microsoft Services Profile v", $($version), " loaded==--" -Color Yellow, Green, Yellow
     Import-ProfileSettings
     Invoke-DisplayAccount
     Invoke-DisplayCommands
@@ -248,40 +264,52 @@ function Update-Prompt {
 }
 # [X] Prompt user for credentials
 function Get-Credentials {
-    Write-Host "Prompting user for credential input"
-    $script:microsoftCredential = Get-Credential
-    # return $script:microsoftCredential
+    Write-Host "`tPrompting user for credential input" -ForegroundColor Yellow
+    $script:microsoftCredential = Get-Credential -Message "Enter your admin account credentials"
+    if ($script:microsoftCredential.Username.Length -eq 0) {
+        Write-Host "Username is blank" -ForegroundColor Yellow
+        $script:blankUsername = $true
+    } else {
+        $script:blankUsername = $false
+    }
+    if ($script:microsoftCredential.Password.Length -eq 0) {
+        Write-Host "Password is blank" -ForegroundColor Yellow
+        $script:blankPassword = $true
+    } else {
+        $script:blankPassword = $false
+    }
 }
 # [X] Save credentials to environment variables
 function Export-Credentials {
     Param (
         [Parameter(Mandatory)]$script:microsoftCredential
     )
+    Write-Host "`tSaving Variables ..." -ForegroundColor Yellow
     # Save Username
     if ($script:microsoftCredential.Username.Length -eq 0) {
         Write-Host "Username is blank - skipping save" -ForegroundColor Yellow
-        $userSaved = "No"
+        $userSaved = $false
         $userSavedColor = "Red"
     } else {
         $encryptedUser = $script:microsoftCredential.Username | ConvertTo-SecureString -AsPlainText -Force | ConvertFrom-SecureString #Saves User as numbers 
         [System.Environment]::SetEnvironmentVariable('microsoftConnectionUser', $encryptedUser, [System.EnvironmentVariableTarget]::User)
-        $userSaved = "Yes"
+        $userSaved = $true
         $userSavedColor = "Green"
     }
+    Write-Host "`tUser Saved:$($userSaved)" -ForegroundColor $userSavedColor
     # Save Password
     if ($script:microsoftCredential.Password.Length -eq 0) {
         Write-Host "Password is blank - skipping save" -ForegroundColor Yellow
-        $passwordSaved = "No"
+        $passwordSaved = $false
         $passwordSavedColor = "Red"
     } else {
         #DEBUG $script:microsoftCredential = Get-Credential
         $encryptedPass = ConvertFrom-SecureString $script:microsoftCredential.Password 
         [System.Environment]::SetEnvironmentVariable('microsoftConnectionPass', $encryptedPass, [System.environmentVariableTarget]::User)
-        $passwordSaved = "Yes"
+        $passwordSaved = $true  
         $passwordSavedColor = "Green"
     }
-    Write-Color "User Saved: $($userSaved)" -Color Yellow, $userSavedColor
-    Write-Color "Password Saved: $($passwordSaved)" -Color Yellow, $passwordSavedColor
+    Write-Host "`tPassword Saved: $($passwordSaved)" -ForegroundColor $passwordSavedColor
     Write-Host "`n`tPlease reload PowerShell for changes to take effect.`n" -ForegroundColor Green
 }
 # [X] Check MFA Status
@@ -347,9 +375,12 @@ function Import-Credentials {
 
 Function Invoke-ConnectedServiceCheck {
     [Parameter(Mandatory)]$serviceName
-    if ($connectedServices.ToLower().Contains($serviceName)) {
-        Write-Color $serviceName, " is already connected." -Color Yellow, White
-        break
+    # Only check for connections if there's been service connected already
+    if ($connectedServices.Length -ne 0 ) {
+        if ($connectedServices.ToLower().Contains($serviceName)) {
+            Write-Color $serviceName, " is already connected." -Color Yellow, $foregroundColor
+            break
+        }
     }
 }
 
@@ -357,11 +388,11 @@ Function Invoke-ConnectedServiceCheck {
 function Invoke-ModuleCheck {
     [Parameter(Mandatory)]$moduleName
     if (!(Get-Module -Name $moduleName -ListAvailable)) {
-        Write-Color "Module ", $moduleName, " is missing." -Color White, Yellow, White
+        Write-Color "Module ", $moduleName, " is missing." -Color $foregroundColor, Yellow, $foregroundColor
         $Prompt = "Install [Y/N]"
         $Answer = Read-Host -Prompt $Prompt
         If ($answer.ToUpper() -ne "Y") {
-            Write-Color "Module ", $moduleName, " not installed." -Color White, Yellow, White
+            Write-Color "Module ", $moduleName, " not installed." -Color $foregroundColor, Yellow, $foregroundColor
             break
         }
         if (Get-IsAdministrator -eq $true) {
@@ -468,7 +499,7 @@ function SharePoint {
     Invoke-ModuleCheck('Microsoft.Online.SharePoint.PowerShell')
     try {
         $orgName = Read-Host -Prompt "Enter your SharePoint organization name" 
-        Write-Color "Example: ", "https://", "tenantname", "-admin.sharepoint.com" -Color Yellow, White, Green, White
+        Write-Color "Example: ", "https://", "tenantname", "-admin.sharepoint.com" -Color Yellow, $foregroundColor, Green, $foregroundColor
         # Check for and remove -admin
         if ($orgname -like '*-admin') {
             $orgname = $orgName.split('-')[0]
@@ -515,7 +546,7 @@ function Intune {
     # Loading MSonline before Intune can cause issues
     if ($connectedServices -contains 'MSOnline') {
         Write-Color "*************", "Importing the MSOnline cmdlets before importing this Intune module will cause errors. Please use the AzureAD module instead, as the MSOnline module is deprecated.
-        If you absolutely must use the MSOnline module, it should be imported AFTER the Intune module. Note, however, that this is not officially supported. More info available here:", "https://github.com/Microsoft/Intune-PowerShell-SDK", "*************" -Color Yellow, White, Cyan, Yellow
+        If you absolutely must use the MSOnline module, it should be imported AFTER the Intune module. Note, however, that this is not officially supported. More info available here:", "https://github.com/Microsoft/Intune-PowerShell-SDK", "*************" -Color Yellow, $foregroundColor, Cyan, Yellow
     }
     try {
         Connect-MSGraph PSCredential $script:microsoftCredential        
@@ -588,14 +619,14 @@ if ($install.IsPresent) {
         break
     } else {
         Add-Content $Profile -Value ($installCommand)
-        Write-Color -Text "Added command ", $installCommand, " to $($Profile)", "`n`tPlease reload PowerShell for changes to take effect." -Color White, Yellow, White, Green
+        Write-Color -Text "Added command ", $installCommand, " to $($Profile)", "`n`tPlease reload PowerShell for changes to take effect." -Color $foregroundColor, Yellow, $foregroundColor, Green
         exit
     }
 }
 if ($uninstall.IsPresent) {
     if ((Get-Content $Profile | Select-String -Pattern ([regex]::Escape($installCommand))).Matches.Success) {
     (Get-Content $Profile).Replace(($installCommand), "") | Set-Content $Profile
-        Write-Color -Text "Removed ", $installCommand, " from $($Profile)", "`n`tPlease reload PowerShell for changes to take effect." -Color White, Yellow, White, Green
+        Write-Color -Text "Removed ", $installCommand, " from $($Profile)", "`n`tPlease reload PowerShell for changes to take effect." -Color $foregroundColor, Yellow, $foregroundColor, Green
         break
     } else {
         Write-Color "`tProfile is not installed" -Color Red
