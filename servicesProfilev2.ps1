@@ -20,6 +20,8 @@ https://docs.microsoft.com/en-us/powershell/scripting/developer/module/how-to-wr
     Set-ExeuctionPolicy RemoteSigned
     
 #>
+$version = "2.0"
+
 param (
     [Switch]$install,
     [Switch]$uninstall
@@ -38,15 +40,15 @@ function Invoke-DisplayCommands {
     Write-Host "Add-Account | Remove-Account | Add-MFA | Remove-MFA `n" -ForegroundColor Yellow
     Write-Host "Helpful Variables" -ForegroundColor Green
     if ($null -eq $script:microsoftUser) {
-        Write-Color '$script:microsoftUser = ', 'Not set' -Color Yellow, White
+        Write-Color '$microsoftUser = ', 'Not set' -Color Yellow, White
     } else {
-        Write-Color '$script:microsoftUser = ', $script:microsoftUser -Color Yellow, White
+        Write-Color '$microsoftUser = ', $script:microsoftUser -Color Yellow, White
 
     }
     if ($null -eq $script:domain) {
-        Write-Color '$script:domain = ', "Not set" -Color Yellow, White
+        Write-Color '$domain = ', "Not set" -Color Yellow, White
     } else {
-        Write-Color '$script:domain = ', $script:domain -Color Yellow, White
+        Write-Color '$domain = ', $script:domain -Color Yellow, White
     }
     Write-Color "`nRe-display commands with: ", 'Invoke-DisplayCommands' -Color Green, White
 }
@@ -57,7 +59,7 @@ function Import-Domain {
     } else {
         $script:domain = $null
     }
-    return $script:domain
+    # return $script:domain
 }
 function Set-Domain {
     $script:domain = Read-Host "Enter your domain:"
@@ -66,7 +68,7 @@ function Set-Domain {
         $script:domain = $null
         Exit
     }
-    return $script:domain
+    # return $script:domain
 }
 function Add-Account {
     $script:microsoftCredential = Get-Credentials
@@ -82,25 +84,29 @@ function Add-Account {
             Write-Warning $Error[0]
         }
     }
-    return $script:microsoftCredential
+    # return $script:microsoftCredential
 }
 # [X] remove the environment variable
 function Remove-Account {
     # Delete environment variable 
-    if ([Environment]::GetEnvironmentVariable('microsoftConnectionUser', 'User')) {
+    if (Test-Path env:microsoftConnectionUser) {
         [Environment]::SetEnvironmentVariable("microsoftConnectionUser", $null, "User")
+        Write-Color "`tMicrosoft connection user removed" -ForegroundColor Yellow
     } 
-    if ([Environment]::GetEnvironmentVariable('microsoftConnectionPass', 'User')) {
+    if (Test-Path env:microsoftConnectionPass) {
         [Environment]::SetEnvironmentVariable("microsoftConnectionPass", $null, "User")
+        Write-Color "`tMicrosoft connection password removed" -ForegroundColor Yellow
     } 
     
-    if ([Environment]::GetEnvironmentVariable('microsoftConnectionMfa', 'User')) {
+    if (Test-Path env:microsoftConnectionMFA) {
         [Environment]::SetEnvironmentVariable("microsoftConnectionMfa", $null, "User")
+        Write-Color "`tMicrosoft connection MFA removed" -ForegroundColor Yellow
     } 
     $script:microsoftUser = $null
     $script:microsoftPass = $null
-    $mfaStatus = $null
-    return $script:microsoftUser, $script:microsoftPass, $mfaStatus
+    $script:mfaStatus = $null
+    $script:domain = $null
+    # return $script:microsoftUser, $script:microsoftPass, $script:mfaStatus
 }
 function Invoke-DisplayAccount {
     [Parameter(Mandatory)]$script:microsoftUser
@@ -126,9 +132,10 @@ Function Get-IsAdministrator {
         Determine if the script is running in the context of an administrator or not
     #>
     $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
-    Return $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    $script:isAdmin = $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 # Not currently used, need to add remediation logic
+# Need to check if 
 Function Uninstall-OldModules {
     <#
         Removes old versions of a module
@@ -220,13 +227,15 @@ function Import-ProfileSettings {
     Import-Domain
 }
 function Start-Profile {
-    # These functions should run on ever new profile load 
+    # These functions will run on ever new profile load 
+    Clear-Host
+    Write-Host "Microsoft Services Profile v$($version) loaded"
     Import-ProfileSettings
     Invoke-DisplayAccount
     Invoke-DisplayCommands
     # Initialize Variabels that may be used later 
     $connectedServices = @()
-    return $connectedServices
+    # return $connectedServices
 }
 # [X] Ammend the current prompt
 function Update-Prompt {
@@ -241,7 +250,7 @@ function Update-Prompt {
 function Get-Credentials {
     Write-Host "Prompting user for credential input"
     $script:microsoftCredential = Get-Credential
-    return $script:microsoftCredential
+    # return $script:microsoftCredential
 }
 # [X] Save credentials to environment variables
 function Export-Credentials {
@@ -280,24 +289,24 @@ function Import-MFAStatus {
     # Check for saved password
     # if (-not [Environment]::GetEnvironmentVariable('microsoftConnectionMfa', 'User')) {
     #     "Microsoft connection MFA status not found."
-    #     $mfaStatus = $false
+    #     $script:mfaStatus = $false
     # } else {
-    #     $mfaStatus = $true
+    #     $script:mfaStatus = $true
     # }
-    $mfaStatus = Test-Path env:microsoftConnectionMFA
-    return $mfaStatus
+    $script:mfaStatus = Test-Path env:microsoftConnectionMFA
+    # return $script:mfaStatus
 }
 function Add-MFA() {
     Write-Host "Saving MFA settings to environment variable"
     [System.Environment]::SetEnvironmentVariable('microsoftConnectionMFA', $true, [System.EnvironmentVariableTarget]::User)
-    $mfaStatus = $true
-    return $mfaStatus
+    $script:mfaStatus = $true
+    # return $script:mfaStatus
 }
   
 function Remove-MFA() {
     [Environment]::SetEnvironmentVariable("microsoftConnectionMFA", $null, "User")
-    $mfaStatus = $false 
-    return $mfaStatus
+    $script:mfaStatus = $false 
+    # return $script:mfaStatus
 }
 
 #! 2.22 broken [X] Load credentials 
@@ -307,18 +316,20 @@ function Import-Credentials {
     $script:microsoftCredential = $null
     #! Debug start
     # Check for saved username
-    if (-not [Environment]::GetEnvironmentVariable('microsoftConnectionUser', 'User')) {
-        $script:microsoftUser = $null
-    } else {
+    if (Test-Path env:microsoftConnectionUser) {
         $script:microsoftUser = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR((ConvertTo-SecureString ($env:microsoftconnectionUser))))
-    }
+    } 
+    # else {
+    #     $script:microsoftUser = $null
+    # }
     # Check for saved password
-    if ([Environment]::GetEnvironmentVariable('microsoftConnectionPass', 'User')) {
+    if (Test-Path env:microsoftConnectionPass) {
         $script:microsoftPass = ConvertTo-SecureString ($env:microsoftConnectionPass)
         $script:microsoftCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $script:microsoftUser, $script:microsoftPass
-    } else {
-        $script:microsoftPass = $null   
-    }
+    } 
+    # else {
+    #     $script:microsoftPass = $null   
+    # }
     #! Debug End 
     # #NOTE 3.3.22 code below is working
     # # Load User
@@ -331,7 +342,7 @@ function Import-Credentials {
     # } catch {
     #     #! need to handle blank password and blank username
     # }
-    return $script:microsoftUser, $script:microsoftPass, $script:microsoftCredential
+    # return $script:microsoftUser, $script:microsoftPass, $script:microsoftCredential
 }
 
 Function Invoke-ConnectedServiceCheck {
@@ -379,7 +390,7 @@ function Teams {
             # Connect without MFA enforcedd
             Connect-MicrosoftTeams -Credential $script:microsoftCredential
         }
-        return $connectedServices
+        # return $connectedServices
     } catch {
         Write-Warning 'Unable to connect to Teams'
         Write-Warning $Error[0]
@@ -399,7 +410,7 @@ function ExchangeServer {
         Write-Warning 'Unable to connect to Exchnage Service'
         Write-Warning $Error[0]
     }
-    return $connectedServices
+    # return $connectedServices
 }
 function Exchange { 
     # Check $connectedServices
@@ -415,7 +426,7 @@ function Exchange {
         Write-Warning 'Unable to connect to Exchange Online'
         Write-Warning $Error[0]
     }
-    return $connectedServices
+    # return $connectedServices
 }
 function MSOnline { 
     # Check $connectedServices
@@ -431,7 +442,7 @@ function MSOnline {
         Write-Warning 'Unable to connect to MSOnline'
         Write-Warning $Error[0]
     }
-    return $connectedServices
+    # return $connectedServices
 }
 function AzureAD { 
     # Check $connectedServices
@@ -446,7 +457,7 @@ function AzureAD {
         Write-Warning 'Unable to connect to Azure AD'
         Write-Warning $Error[0]
     }
-    return $connectedServices
+    # return $connectedServices
 }
 
 #! 3.5.22 left off here
@@ -474,7 +485,7 @@ function SharePoint {
         Write-Warning 'Unable to connect to SharePoint'
         Write-Warning $Error[0]
     }
-    return $connectedServices
+    # return $connectedServices
 }
 function Security_Compliance { 
     # Check $connectedServices
@@ -494,13 +505,14 @@ function Security_Compliance {
         Write-Warning 'Unable to connect to Teams'
         Write-Warning $Error[0]
     }
-    return $connectedServices
+    # return $connectedServices
 }
 function Intune { 
     # Check $connectedServices
     Invoke-ConnectedServiceCheck($MyInvocation.MyCommand.Name)
     # Check if module is installed
     Invoke-ModuleCheck('Microsoft.Graph.Intune')
+    # Loading MSonline before Intune can cause issues
     if ($connectedServices -contains 'MSOnline') {
         Write-Color "*************", "Importing the MSOnline cmdlets before importing this Intune module will cause errors. Please use the AzureAD module instead, as the MSOnline module is deprecated.
         If you absolutely must use the MSOnline module, it should be imported AFTER the Intune module. Note, however, that this is not officially supported. More info available here:", "https://github.com/Microsoft/Intune-PowerShell-SDK", "*************" -Color Yellow, White, Cyan, Yellow
@@ -522,7 +534,7 @@ function Intune {
         Write-Warning 'Unable to connect to Intune'
         Write-Warning $Error[0]
     }
-    return $connectedServices
+    # return $connectedServices
 }
 
 #! End specific service connection functions
@@ -559,7 +571,7 @@ function disconnect {
         Write-Host "Disconnected Service: " $($service) -ForegroundColor Yellow
     }
     $connectedServices = @()
-    return $connectedServices
+    # return $connectedServices
 }
 
 
@@ -573,7 +585,7 @@ if ($install.IsPresent) {
     }
     if ((Get-Content $Profile | Select-String -Pattern ([regex]::Escape($installCommand))).Matches.Success) {
         Write-Color "`tProfile is already installed" -Color Red
-        Break
+        break
     } else {
         Add-Content $Profile -Value ($installCommand)
         Write-Color -Text "Added command ", $installCommand, " to $($Profile)", "`n`tPlease reload PowerShell for changes to take effect." -Color White, Yellow, White, Green
