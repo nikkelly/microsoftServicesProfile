@@ -248,15 +248,15 @@ function Start-Profile {
     Invoke-DisplayAccount
     Invoke-DisplayCommands
     # Initialize Variabels that may be used later 
-    $connectedServices = @()
-    # return $connectedServices
+    $script:connectedServices = @()
+    # return $script:connectedServices
 }
 # [X] Ammend the current prompt
 function Update-Prompt {
     $function:prompt = & {
         $__last_prompt = $function:prompt
         { & $script:__last_prompt
-            Write-Host $($connectedServices) -NoNewline -ForegroundColor Yellow
+            Write-Host $($script:connectedServices) -NoNewline -ForegroundColor Yellow
         }.GetNewClosure()
     }
 }
@@ -279,9 +279,6 @@ function Get-Credentials {
 }
 # [X] Save credentials to environment variables
 function Export-Credentials {
-    Param (
-        [Parameter(Mandatory)]$script:microsoftCredential
-    )
     Write-Host "`tSaving Variables ..." -ForegroundColor Yellow
     # Save Username
     if ($script:microsoftCredential.Username.Length -eq 0) {
@@ -372,10 +369,10 @@ function Import-Credentials {
 }
 
 Function Invoke-ConnectedServiceCheck {
-    [Parameter(Mandatory)]$serviceName
+    # [Parameter(Mandatory)]$serviceName
     # Only check for connections if there's been service connected already
-    if ($connectedServices.Length -ne 0 ) {
-        if ($connectedServices.ToLower().Contains($serviceName)) {
+    if ($script:connectedServices.Length -ne 0 ) {
+        if ($script:connectedServices.ToLower().Contains($serviceName)) {
             Write-Color $serviceName, " is already connected." -Color Yellow, $foregroundColor
             break
         }
@@ -388,8 +385,8 @@ function Invoke-ModuleCheck {
     if (!(Get-Module -Name $moduleName -ListAvailable)) {
         Write-Color "`tModule ", $moduleName, " is missing." -Color $foregroundColor, Yellow, $foregroundColor
         # $Prompt = "`t`tInstall [Y/N]"
-        $prompt = $(Write-Color "`t`tInstall? [", "Y", "/", "N", "]" -Color Yellow, Green, Yellow, Red, Yellow; Read-Host)
-        $Answer = Read-Host -Prompt $Prompt
+        $installPrompt = $(Write-Color "`t`tInstall? [", "Y", "/", "N", "]" -Color Yellow, Green, Yellow, Red, Yellow; Read-Host)
+        $Answer = Read-Host -Prompt $installPrompt
         If ($answer.ToUpper() -ne "Y") {
             Write-Color "`tModule ", $moduleName, " not installed." -Color $foregroundColor, Yellow, $foregroundColor
             break
@@ -407,23 +404,22 @@ function Invoke-ModuleCheck {
 # [ ] Individual Service connection commands
 # [X] Teams 
 function Teams { 
-    # Check $connectedServices
-    Invoke-ConnectedServiceCheck($MyInvocation.MyCommand.Name) 
+    # Check $script:connectedServices
+    $serviceName = $MyInvocation.MyCommand.Name
+    Invoke-ConnectedServiceCheck $serviceName
     $moduleName = 'MicrosoftTeams'
     try {
     # Check if module is installed
-
         Invoke-ModuleCheck -moduleName $moduleName
         if ($script:mfaStatus) {
             # Connect with MFA enforced
             Connect-MicrosoftTeams
-            $connectedServices += 'Teams'
-
         } else { 
             # Connect without MFA enforcedd
             Connect-MicrosoftTeams -Credential $script:microsoftCredential
         }
-        # return $connectedServices
+        $script:connectedServices += 'Teams'
+        # return $script:connectedServices
     } catch {
         Write-Warning "Unable to connect to $($MyInvocation.MyCommand.Name)"
         Write-Warning $Error[0]
@@ -431,22 +427,22 @@ function Teams {
 }
 # [X]
 function ExchangeServer { 
-    # Check $connectedServices
+    # Check $script:connectedServices
     Invoke-ConnectedServiceCheck($MyInvocation.MyCommand.Name) 
     try {
         $serverFQDN = Read-Host -Prompt "Enter Exchange Server FQDN: "
         $exchangeServerSession = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri http://$serverFQDN/PowerShell/ -Authentication Kerberos -Credential $script:microsoftCredential
         Import-PSSession $exchangeServerSession -DisableNameChecking  
-        $connectedServices += 'ExchangeServer'
+        $script:connectedServices += 'ExchangeServer'
 
     } catch {
         Write-Warning 'Unable to connect to Exchnage Service'
         Write-Warning $Error[0]
     }
-    # return $connectedServices
+    # return $script:connectedServices
 }
 function Exchange { 
-    # Check $connectedServices
+    # Check $script:connectedServices
     Invoke-ConnectedServiceCheck($MyInvocation.MyCommand.Name) 
     $moduleName = 'ExchangeOnlineManagement'
     # Invoke-ModuleCheck('ExchangeOnlineManagement')
@@ -458,16 +454,16 @@ function Exchange {
 
         # Exchange Online V2 uses modern auth by default and supports MFA
         Connect-ExchangeOnline -UserPrincipalName $script:microsoftCredential.UserName
-        $connectedServices += 'Exchange'
+        $script:connectedServices += 'Exchange'
 
     } catch {
         Write-Warning 'Unable to connect to Exchange Online'
         Write-Warning $Error[0]
     }
-    # return $connectedServices
+    # return $script:connectedServices
 }
 function MSOnline { 
-    # Check $connectedServices
+    # Check $script:connectedServices
     Invoke-ConnectedServiceCheck($MyInvocation.MyCommand.Name) 
    $moduleName = 'MSOnline'
     try {
@@ -476,16 +472,16 @@ function MSOnline {
 
         # Doesn't appear to be any need for differnt auth types
         Connect-MsolService -Credential $script:microsoftCredential
-        $connectedServices += 'MSOnline'
+        $script:connectedServices += 'MSOnline'
 
     } catch {
         Write-Warning 'Unable to connect to MSOnline'
         Write-Warning $Error[0]
     }
-    # return $connectedServices
+    # return $script:connectedServices
 }
 function AzureAD { 
-    # Check $connectedServices
+    # Check $script:connectedServices
     Invoke-ConnectedServiceCheck($MyInvocation.MyCommand.Name)
     # Check if module is installe
     # Invoke-ModuleCheck('AzureAD')
@@ -494,16 +490,16 @@ function AzureAD {
                  # Check if module is installed
     Invoke-ModuleCheck -moduleName $moduleName
         AzureAD\Connect-AzureAD -Credential $script:microsoftCredential
-        $connectedServices += 'AzureAD'
+        $script:connectedServices += 'AzureAD'
         
     } catch {
         Write-Warning 'Unable to connect to Azure AD'
         Write-Warning $Error[0]
     }
-    # return $connectedServices
+    # return $script:connectedServices
 }
 function AzureADPreview {
-    # Check $connectedServices
+    # Check $script:connectedServices
     Invoke-ConnectedServiceCheck($MyInvocation.MyCommand.Name)
     # Check if module is installed
     # Invoke-ModuleCheck('AzureADPreview')
@@ -512,16 +508,16 @@ function AzureADPreview {
                      # Check if module is installed
     Invoke-ModuleCheck -moduleName $moduleName
         AzureADPreview\Connect-AzureAD -Credential $script:microsoftCredential
-        $connectedServices += 'AzureADPreview'
+        $script:connectedServices += 'AzureADPreview'
         
     } catch {
         Write-Warning 'Unable to connect to Azure AD'
         Write-Warning $Error[0]
     }
-    # return $connectedServices
+    # return $script:connectedServices
 }
 function SharePoint { 
-    # Check $connectedServices
+    # Check $script:connectedServices
     Invoke-ConnectedServiceCheck($MyInvocation.MyCommand.Name)
     # Check if module is installed
     # Invoke-ModuleCheck('Microsoft.Online.SharePoint.PowerShell')
@@ -529,8 +525,8 @@ function SharePoint {
     try {
                      # Check if module is installed
     Invoke-ModuleCheck -moduleName $moduleName
-        $orgName = Read-Host -Prompt "Enter your SharePoint organization name" 
-        Write-Color "Example: ", "https://", "tenantname", "-admin.sharepoint.com" -Color Yellow, $foregroundColor, Green, $foregroundColor
+         -Prompt "Enter your SharePoint organization name" 
+         $orgName = $(Write-Color "Example: ", "https://", "tenantname", "-admin.sharepoint.com" -Color Yellow, $foregroundColor, Green, $foregroundColor; Read-Host)
         # Check for and remove -admin
         if ($orgname -like '*-admin') {
             $orgname = $orgName.split('-')[0]
@@ -542,15 +538,15 @@ function SharePoint {
             # Connect without MFA enforced
             Connect-SPOService -Url https://$orgName-admin.sharepoint.com -Credential $script:microsoftCredential
         }
-        $connectedServices += 'SharePoint'
+        $script:connectedServices += 'SharePoint'
     } catch {
         Write-Warning 'Unable to connect to SharePoint'
         Write-Warning $Error[0]
     }
-    # return $connectedServices
+    # return $script:connectedServices
 }
 function Security_Compliance { 
-    # Check $connectedServices
+    # Check $script:connectedServices
     Invoke-ConnectedServiceCheck($MyInvocation.MyCommand.Name)
     # Check if module is installed
     # Invoke-ModuleCheck('ExchangeOnlineManagement')
@@ -565,21 +561,21 @@ function Security_Compliance {
             # Connect without MFA enforced
             Connect-IPPSSession -UserPrincipalName $script:microsoftCredential
         }
-        $connectedServices += 'Security_Compliance'
+        $script:connectedServices += 'Security_Compliance'
     } catch {
-        Write-Warning 'Unable to connect to Teams'
+        Write-Warning 'Unable to connect to Security & Complaince Center'
         Write-Warning $Error[0]
     }
-    # return $connectedServices
+    # return $script:connectedServices
 }
 function Intune { 
-    # Check $connectedServices
+    # Check $script:connectedServices
     Invoke-ConnectedServiceCheck($MyInvocation.MyCommand.Name)
     # Check if module is installed
     # Invoke-ModuleCheck('Microsoft.Graph.Intune')
     $moduleName = 'Microsoft.Graph.Intune'
     # Loading MSonline before Intune can cause issues
-    if ($connectedServices -contains 'MSOnline') {
+    if ($script:connectedServices -contains 'MSOnline') {
         Write-Color "*************", "Importing the MSOnline cmdlets before importing this Intune module will cause errors. Please use the AzureAD module instead, as the MSOnline module is deprecated.
         If you absolutely must use the MSOnline module, it should be imported AFTER the Intune module. Note, however, that this is not officially supported. More info available here:", "https://github.com/Microsoft/Intune-PowerShell-SDK", "*************" -Color Yellow, $foregroundColor, Cyan, Yellow
     }
@@ -594,7 +590,7 @@ function Intune {
         # } else { 
         #     # Connect without MFA enforced
         # }
-        $connectedServices += 'Intune'
+        $script:connectedServices += 'Intune'
     } catch {
         Write-Host Graph Connection Failed
         Write-Host You may need to connect with /'Connect-MSGraph -Consent'/
@@ -602,12 +598,12 @@ function Intune {
         Write-Warning 'Unable to connect to Intune'
         Write-Warning $Error[0]
     }
-    # return $connectedServices
+    # return $script:connectedServices
 }
 
 #! End specific service connection functions
 function disconnect {
-    foreach ($service in $connectedServices) {
+    foreach ($service in $script:connectedServices) {
         Switch ($service) {
             "Teams" { 
                 Disconnect-MicrosoftTeams
@@ -636,11 +632,11 @@ function disconnect {
             }
 
         }
-        $connectedServices = $connectedServices | Where-Object { $_ -NE $service }
+        $script:connectedServices = $script:connectedServices | Where-Object { $_ -NE $service }
         Write-Host "Disconnected Service: " $($service) -ForegroundColor Yellow
     }
-    $connectedServices = @()
-    # return $connectedServices
+    $script:connectedServices = @()
+    # return $script:connectedServices
 }
 
 
@@ -676,4 +672,4 @@ if ($uninstall.IsPresent) {
 Start-Profile
 
 #! Debug Starting
-# Write-Host "Connected Services: " $connectedServices
+# Write-Host "Connected Services: " $script:connectedServices
