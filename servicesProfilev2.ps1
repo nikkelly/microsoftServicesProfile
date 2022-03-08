@@ -125,8 +125,6 @@ function Remove-Account {
     # return $script:microsoftUser, $script:microsoftPass, $script:mfaStatus
 }
 function Invoke-DisplayAccount {
-    [Parameter(Mandatory)]$script:microsoftUser
-    [Parameter(Mandatory)][String]$script:microsoftPass
     $script:microsoftPassLoaded = $false
     $script:microsoftUserLoaded = $false
     if ($null -eq $script:microsoftUser) {
@@ -481,7 +479,7 @@ function AzureAD {
     # Check if module is installed
     Invoke-ModuleCheck('AzureAD')
     try {
-        Connect-AzureAD -Credential $script:microsoftCredential
+        AzureAD\Connect-AzureAD -Credential $script:microsoftCredential
         $connectedServices += 'AzureAD'
         
     } catch {
@@ -490,8 +488,21 @@ function AzureAD {
     }
     # return $connectedServices
 }
-
-#! 3.5.22 left off here
+function AzureADPreview {
+    # Check $connectedServices
+    Invoke-ConnectedServiceCheck($MyInvocation.MyCommand.Name)
+    # Check if module is installed
+    Invoke-ModuleCheck('AzureADPreview')
+    try {
+        AzureADPreview\Connect-AzureAD -Credential $script:microsoftCredential
+        $connectedServices += 'AzureADPreview'
+        
+    } catch {
+        Write-Warning 'Unable to connect to Azure AD'
+        Write-Warning $Error[0]
+    }
+    # return $connectedServices
+}
 function SharePoint { 
     # Check $connectedServices
     Invoke-ConnectedServiceCheck($MyInvocation.MyCommand.Name)
@@ -636,7 +647,6 @@ if ($uninstall.IsPresent) {
 
 # Import profile settings
 Start-Profile
-
 
 #! Debug Starting
 # Write-Host "Connected Services: " $connectedServices
