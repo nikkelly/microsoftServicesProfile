@@ -1,4 +1,5 @@
-[ ] Run individual services
+[X] Run individual services
+ [ ] Add AzureAd Preview
 [ ] Split up functionailty of Invoke-ModuleCheck-Old
 [X] Update prompt with services
 [X] prompt user for credentials
@@ -14,16 +15,27 @@
       - Import-Credentials
       - 
 [X] Re-Display Commands
+[ ] Prompt user for update if new module is available
 
 To Check
 [ ] Check that 'Helpful Variables' listed actually work 
-[ ] Can I import the colors from Get-PSreadlineOption 
+[x] Can I import the colors from Get-PSreadlineOption 
+  - nope, but i can get them from $host.RawUI and $host.PrivateDate
 [ ] For Security_Compliance: 
-- Note: After the Connect-IPPSSession command is complete, the password key in the $UserCredential is emptied. (https://docs.microsoft.com/en-us/powershell/exchange/connect-to-scc-powershell?view=exchange-ps)
+  - Note: After the Connect-IPPSSession command is complete, the password key in the $UserCredential is emptied. (https://docs.microsoft.com/en-us/powershell/exchange/connect-to-scc-powershell?view=exchange-ps)
 [ ] verify that all accounts can connect with blank credentials
   - Check that the MFA/NonMFA versions have a connection possible
   - Otherwise need to add a 3rd option if $microsoftCredential is blank, or at least a check to the if statement if it's the same for MFA and not
+[X] Can i store user defined colors? 
+  - I declared it before anything started
 
+
+Things to Debug
+[ ] Individual services
+[ ] cmdlet Get-Credential at command pipeline position 1
+[ ] Trying to add account
+  - WARNING: Unable to add account
+    WARNING: Cannot bind argument to parameter 'script:microsoftCredential' because it is null.
 
 Test Accounts 
 mfaDisabled@nikkelly.onmicrosoft.com
@@ -37,6 +49,14 @@ if (Test-Path env:microsoftConnectionMFA){
 }
 
 # scratchPad
-save password as encrypted string 
-$creds = Get-Credential
-$encryptedPass = ConvertFrom-SecureString $creds.Password 
+if (-not [Environment]::GetEnvironmentVariable('microsoftConnectionUser', 'User')) {
+        Write-Host "not set"
+    } else {
+        Write-Host "user set" 
+    }
+
+if (Test-Path env:microsoftconnectionUser) {
+    Write-Host "set"
+} else {
+    Write-Host "not set" 
+}
