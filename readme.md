@@ -1,42 +1,36 @@
 # Microsoft Services PowerShell Profile
 
-Connect to Microsoft 365 services with a single command.
+Connect to Microsoft 365 services with a single command
 
-![image](https://user-images.githubusercontent.com/46824640/122685399-eff98d00-d1bf-11eb-89ac-3ade3aef9274.png)
-
+![IMAGE](https://i.imgur.com/868HdVi.png)
 
 ## Installation
 
-### PowerShell
+### PowerShell 
 
-`git clone https://github.com/nikkelly/microsoftServicesProfile.git`
+`git clone https://github.com/nikkelly/microsoftServicesProfile.git` 
 
-Use `notepad $profile` to open your PowerShell profile
+`.<download directory>\servicesProfilev2.ps1 -install`
 
-Add `Import-module '<PATH TO FILE>/microsoftServicesProfile.ps1' -Force` to the file and save.
 
-### Windows Terminal
+## First Time Setup
+`<download directory>\servicesProfilev2.ps1 -install`
+![Image](https://i.imgur.com/JpBt21j.png)
 
-`git clone https://github.com/nikkelly/microsoftServicesProfile.git`
 
-Generate a new GUID in PowerShell with `New-Guid`
+`<download directory>\servicesProfilev2.ps1 -uninstall`
+![IMAGE](https://imgur.com/tJOjrl9.png)
 
-Add new profile in Windows Terminal settings:
 
-```JSON
-{
-    "guid": "<GUID FROM POWERSHELL>",
-    "name": "M365 Admin Console",
-    "commandline": "powershell.exe -noprofile -noexit -command \"invoke-expression '. ''<PATH TO FILE>/microsoftServicesProfile.ps1''' \"",
-    "icon": "<PATH TO LOGO>/m365logo.png",
-    "hidden": false,
-    "colorScheme": "Tomorrow Night Eighties"
-}
-```
+`add-account`
+![IMAGE](https://imgur.com/ASchEPT.png)
+
+`remove-account`
+![IMAGE](https://i.imgur.com/zYnFRA6.png)
 
 ## Usage
 
-| Command               | Module Documentation                                                                                                                                               |
+| Service Command               | Module Documentation                                                                                                                                               |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `Teams`               | [Microsoft Teams](https://docs.microsoft.com/en-us/MicrosoftTeams/teams-powershell-overview)                                                                       |
 | `Exchange`            | [Microsoft Exchange Online](https://docs.microsoft.com/en-us/powershell/exchange/exchange-online-powershell?view=exchange-ps)                                      |
@@ -60,12 +54,19 @@ Add new profile in Windows Terminal settings:
 
 `$domain` Full domain name of the admin user: **contoso.onmicrosoft.com**
 
-## Issues and Feature Requests
-Feel free to open issues for any issues you're having or features that you'd like to see. Every use case is different, and I want to make sure that I'm accounting for as much as I can. 
 
 ## Notes
 
 - Supports accounts with MFA enabled
 - Username and Password are saved to environment variables as encrypted standard strings
 - Will prompt for install if module is not already installed
-  
+- All of the listed service commands (Teams/SharePoint/etc.) will perform these checks:
+  - Is the user an admin?
+  - Is the necessary module installed? If not already installed, prompt the user for install
+
+
+### Changelog for v2.0
+- Refactored the entire project to be more dynamic
+- No more auto-prompt for credentials
+- Now allows for blank passwords
+- Fixed an issue with SharePoint 
