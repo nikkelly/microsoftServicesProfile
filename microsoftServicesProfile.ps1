@@ -1,8 +1,5 @@
 <#
 TODO 
-https://curi0usjack.blogspot.com/2017/08/creating-self-updating-powershell.html
-- force version checking to make sure the user is using the latest version of the script
-- notify if a new version is avaialble 
 https://docs.microsoft.com/en-us/powershell/scripting/gallery/concepts/publishing-guidelines?view=powershell-7.2
 https://docs.microsoft.com/en-us/powershell/module/psscriptanalyzer/?view=ps-modules
 - run the script analyzer to make sure it's adhering to best practices
@@ -16,6 +13,9 @@ https://docs.microsoft.com/en-us/powershell/scripting/developer/module/how-to-wr
     Connect to Microsoft 365 services with a single command.
   .DESCRIPTION 
     https://github.com/nikkelly/microsoftServicesProfile
+
+    
+
   .PREREQUISITES
     Set-ExeuctionPolicy RemoteSigned
     
@@ -24,7 +24,7 @@ param (
     [Switch]$install,
     [Switch]$uninstall
 )
-$version = [Version]"1.0.0"
+$version = [Version]'1.0.0'
 $foregroundColor = $host.UI.RawUI.ForegroundColor
 
 function Write-Color([String[]]$Text, [ConsoleColor[]]$Color) {
@@ -36,16 +36,16 @@ function Write-Color([String[]]$Text, [ConsoleColor[]]$Color) {
 function Invoke-DisplayCommands {
     Write-Host "`nConnect to Microsoft online services with these commands: " -ForegroundColor Green
     Write-Host "Teams | ExchangeServer | Exchange | MSOnline (AAD V1) | AzureAD (AAD V2) | AzureADPreview | SharePoint | Security_Compliance | Intune | connectAll | Disconnect`n" -ForegroundColor Yellow
-    Write-Host "Manage Account Credentials with: " -ForegroundColor Green
+    Write-Host 'Manage Account Credentials with: ' -ForegroundColor Green
     Write-Host "Add-Account | Remove-Account | Add-MFA | Remove-MFA `n" -ForegroundColor Yellow
-    Write-Host "Helpful Variables" -ForegroundColor Green
+    Write-Host 'Helpful Variables' -ForegroundColor Green
     if ($null -eq $script:microsoftUser) {
         Write-Color '$microsoftUser = ', 'Not set' -Color Yellow, $foregroundColor
     } else {
         Write-Color '$microsoftUser = ', $script:microsoftUser -Color Yellow, $foregroundColor
     }
     if ($null -eq $script:domain) {
-        Write-Color '$domain = ', "Not set" -Color Yellow, $foregroundColor
+        Write-Color '$domain = ', 'Not set' -Color Yellow, $foregroundColor
     } else {
         Write-Color '$domain = ', $script:domain -Color Yellow, $foregroundColor
     }
@@ -59,67 +59,68 @@ function Import-Domain {
     }
 }
 function Set-Domain {
-    $script:domain = Read-Host "Enter your domain:"
+    $script:domain = Read-Host 'Enter your domain:'
     if ($script:domain.Length -eq 0) {
-        Write-Host "Domain cannot be blank."
+        Write-Host 'Domain cannot be blank.'
         $script:domain = $null
         Exit
     }
 }
 function Add-Account {
-    try { Get-Credentials
+    try {
+        Get-Credentials
         if (($script:blankPassword -eq $true) -or ($script:blankUser -eq $true)) {
-            Write-Warning "One of your credentials is blank - please verify this is intended."
+            Write-Warning 'One of your credentials is blank - please verify this is intended.'
         } else {
             Get-MFA
-            $saveCreds = $(Write-Color "`tWould you like to save this account for later? [", "Y", "/", "N", "]" -Color Yellow, Green, Yellow, Red, Yellow; Read-Host)
-            if ($saveCreds.ToUpper() -ne "Y") {
+            $saveCreds = $(Write-Color "`tWould you like to save this account for later? [", 'Y', '/', 'N', ']' -Color Yellow, Green, Yellow, Red, Yellow; Read-Host)
+            if ($saveCreds.ToUpper() -ne 'Y') {
                 Write-Host "`tCredentials not saved" -ForegroundColor Red
             } else {
                 try {
                     Export-Credentials $script:microsoftCredential
                 } catch {
-                    Write-Warning "Unable to add account"
+                    Write-Warning 'Unable to add account'
                     Write-Warning $Error[0]
                     Write-Warning 'Ensure that MFA is not required.'
                 }
             }
         }
     } catch { 
-        Write-Warning "Unable to add account"
+        Write-Warning 'Unable to add account'
     }
 }
 function Remove-Account {
     # Delete environment variable 
     try {
         if (Test-Path env:microsoftConnectionUser) {
-            [system.Environment]::SetEnvironmentVariable("microsoftConnectionUser", $null, "User")
+            [system.Environment]::SetEnvironmentVariable('microsoftConnectionUser', $null, 'User')
             $script:microsoftUser = $null
             $script:domain = $null
             $script:microsoftUserLoaded = $false
             Write-Host "`tMicrosoft connection user removed" -ForegroundColor Yellow
         } 
     } catch { 
-        # Intentionally blank
+        throw
     } 
     try {
         if (Test-Path env:microsoftConnectionPass) {
-            [system.Environment]::SetEnvironmentVariable("microsoftConnectionPass", $null, "User")
+            [system.Environment]::SetEnvironmentVariable('microsoftConnectionPass', $null, 'User')
             $script:microsoftPass = $null
             $script:microsoftPassLoaded = $false
             Write-Host "`tMicrosoft connection password removed" -ForegroundColor Yellow
         } 
-    } catch { 
-        # Intentionally Blank
+    } catch {
+        throw 
     }
     try { 
         if (Test-Path env:microsoftConnectionMFA) {
-            [system.Environment]::SetEnvironmentVariable("microsoftConnectionMfa", $null, "User")
+            [system.Environment]::SetEnvironmentVariable('microsoftConnectionMfa', $null, 'User')
             $script:mfaStatus = $null
             Write-Host "`tMicrosoft connection MFA removed" -ForegroundColor Yellow
         } 
     } catch { 
-        # Intentionally Blank
+        throw
     }
     Write-Host "`n`tPlease close and reopen your PowerShell window for changes to take effect.`n" -ForegroundColor Green
 }
@@ -128,22 +129,22 @@ function Invoke-DisplayAccount {
     $script:microsoftPassLoaded = $false
     $script:microsoftMFALoaded = 'Disabled'
     if (($null -eq $script:microsoftUser) -or ($script:microsoftUser -eq $false)) {
-        Write-Color "Account Imported: ", $script:microsoftUserLoaded -Color $foregroundColor, Red
+        Write-Color 'Account Imported: ', $script:microsoftUserLoaded -Color $foregroundColor, Red
     } else {
         $script:microsoftUserLoaded = $True
-        Write-Color "Account Imported: ", $script:microsoftUserLoaded -Color $foregroundColor, Green
+        Write-Color 'Account Imported: ', $script:microsoftUserLoaded -Color $foregroundColor, Green
     }
     if (($null -eq $script:microsoftPass) -or ($script:microsoftPass -eq $false)) {
-        Write-Color "Password Imported: ", $script:microsoftPassLoaded -Color $foregroundColor, Red
+        Write-Color 'Password Imported: ', $script:microsoftPassLoaded -Color $foregroundColor, Red
     } else {
         $script:microsoftPassLoaded = $True
-        Write-Color "Password Imported: ", $script:microsoftPassLoaded -Color $foregroundColor, Green
+        Write-Color 'Password Imported: ', $script:microsoftPassLoaded -Color $foregroundColor, Green
     }
     if (($null -eq $script:mfaStatus) -or ($script:mfaStatus -eq $false)) {
-        Write-Color "MFA Status: ", $script:microsoftMFALoaded -Color $foregroundColor, Red
+        Write-Color 'MFA Status: ', $script:microsoftMFALoaded -Color $foregroundColor, Red
     } else {
         $script:microsoftMFALoaded = 'Enabled'
-        Write-Color "MFA Status: ", $script:microsoftMFALoaded -Color $foregroundColor, Green
+        Write-Color 'MFA Status: ', $script:microsoftMFALoaded -Color $foregroundColor, Green
     }
 }
 Function Get-IsAdministrator {
@@ -210,7 +211,8 @@ function Import-ProfileSettings {
 }
 function Start-Profile {
     $script:connectedServices = @()
-    Write-Color "--==Microsoft Services Profile v", $($version), " loaded==--" -Color Yellow, Green, Yellow
+    Write-Color '--==Microsoft Services Profile v', $($version), ' loaded==--' -Color Yellow, Green, Yellow
+    Invoke-CheckProfileUpdate
     Import-ProfileSettings
     Invoke-DisplayAccount
     Invoke-DisplayCommands
@@ -222,7 +224,7 @@ function Update-ConnectedServices {
         Update-Prompt
         Write-Host "`tConnected to $serviceName!" -ForegroundColor Green
     } else {
-        $script:joinedServices = "[$($script:connectedServices -join "|")]"
+        $script:joinedServices = "[$($script:connectedServices -join '|')]"
         Write-Host "`tConnected to $serviceName!" -ForegroundColor Green
     } 
 }
@@ -237,15 +239,15 @@ function Update-Prompt {
 }
 function Get-Credentials {
     Write-Host "`tPrompting user for credential input" -ForegroundColor Yellow
-    $script:microsoftCredential = Get-Credential -Message "Enter your admin account credentials"
+    $script:microsoftCredential = Get-Credential -Message 'Enter your admin account credentials'
     if ($script:microsoftCredential.Username.Length -eq 0) {
-        Write-Host "Username is blank" -ForegroundColor Yellow
+        Write-Host 'Username is blank' -ForegroundColor Yellow
         $script:blankUsername = $true
     } else {
         $script:blankUsername = $false
     }
     if ($script:microsoftCredential.Password.Length -eq 0) {
-        Write-Host "Password is blank" -ForegroundColor Yellow
+        Write-Host 'Password is blank' -ForegroundColor Yellow
         $script:blankPassword = $true
     } else {
         $script:blankPassword = $false
@@ -253,8 +255,8 @@ function Get-Credentials {
 }
 function Get-MFA { 
 
-    $mfaCheck = $(Write-Color "`tDoes this account need to have MFA enabled? [", "Y", "/", "N", "]" -Color Yellow, Green, Yellow, Red, Yellow; Read-Host)
-    if (($mfaCheck).ToUpper() -ne "Y") {
+    $mfaCheck = $(Write-Color "`tDoes this account need to have MFA enabled? [", 'Y', '/', 'N', ']' -Color Yellow, Green, Yellow, Red, Yellow; Read-Host)
+    if (($mfaCheck).ToUpper() -ne 'Y') {
         Write-Host "`tMFA status not saved" -ForegroundColor Red
         $script:mfaStatus = $false
     } else { 
@@ -265,27 +267,27 @@ function Export-Credentials {
     Write-Host "`tSaving to environment variables ..." -ForegroundColor Yellow
     # Save Username
     if ($script:microsoftCredential.Username.Length -eq 0) {
-        Write-Host "Username is blank - skipping save" -ForegroundColor Yellow
+        Write-Host 'Username is blank - skipping save' -ForegroundColor Yellow
         $userSaved = $false
-        $userSavedColor = "Red"
+        $userSavedColor = 'Red'
     } else {
         $encryptedUser = $script:microsoftCredential.Username | ConvertTo-SecureString -AsPlainText -Force | ConvertFrom-SecureString #Saves User as numbers 
         [System.Environment]::SetEnvironmentVariable('microsoftConnectionUser', $encryptedUser, [System.EnvironmentVariableTarget]::User)
         $userSaved = $true
-        $userSavedColor = "Green"
+        $userSavedColor = 'Green'
     }
     Write-Host "`tUser Saved:$($userSaved)" -ForegroundColor $userSavedColor
     # Save Password
     if ($script:microsoftCredential.Password.Length -eq 0) {
-        Write-Host "Password is blank - skipping save" -ForegroundColor Yellow
+        Write-Host 'Password is blank - skipping save' -ForegroundColor Yellow
         $passwordSaved = $false
-        $passwordSavedColor = "Red"
+        $passwordSavedColor = 'Red'
     } else {
         #DEBUG $script:microsoftCredential = Get-Credential
         $encryptedPass = ConvertFrom-SecureString $script:microsoftCredential.Password 
         [System.Environment]::SetEnvironmentVariable('microsoftConnectionPass', $encryptedPass, [System.environmentVariableTarget]::User)
         $passwordSaved = $true  
-        $passwordSavedColor = "Green"
+        $passwordSavedColor = 'Green'
     }
     Write-Host "`tPassword Saved: $($passwordSaved)" -ForegroundColor $passwordSavedColor
     Add-MFA
@@ -300,18 +302,18 @@ function Add-MFA() {
     if ($script:mfaStatus -eq $true) {
         [System.Environment]::SetEnvironmentVariable('microsoftConnectionMFA', $true, [System.EnvironmentVariableTarget]::User)
         $script:mfaStatus = $true
-        $mfaSavedColor = "Green"
+        $mfaSavedColor = 'Green'
         $mfaSaved = $true
     } else {
-        Write-Host "MFS status is blank - skipping save"
+        Write-Host 'MFS status is blank - skipping save'
         $mfaSaved = $false
-        $mfaSavedColor = "Red"
+        $mfaSavedColor = 'Red'
     }
     Write-Host "`tMFA Saved: $($mfaSaved)" -ForegroundColor $mfaSavedColor
 }
   
 function Remove-MFA() {
-    [Environment]::SetEnvironmentVariable("microsoftConnectionMFA", $null, "User")
+    [Environment]::SetEnvironmentVariable('microsoftConnectionMFA', $null, 'User')
     $script:mfaStatus = $false 
 }
 function Import-Credentials {
@@ -336,7 +338,7 @@ Function Invoke-ConnectedServiceCheck {
     # Only check for connections if there's been service connected already
     if ($script:connectedServices.Length -ne 0 ) {
         if ($script:connectedServices.ToLower().Contains($serviceName.ToLower())) {
-            Write-Color $serviceName, " is already connected." -Color Yellow, $foregroundColor
+            Write-Color $serviceName, ' is already connected.' -Color Yellow, $foregroundColor
             $script:alreadyConnected = 1
         }
     }
@@ -345,11 +347,11 @@ Function Invoke-ConnectedServiceCheck {
 function Invoke-ModuleCheck {
     # [String]$moduleName
     if (!(Get-Module -Name $moduleName -ListAvailable)) {
-        Write-Color "`tModule ", $moduleName, " is missing." -Color $foregroundColor, Yellow, $foregroundColor
+        Write-Color "`tModule ", $moduleName, ' is missing.' -Color $foregroundColor, Yellow, $foregroundColor
         # $Prompt = "`t`tInstall [Y/N]"
-        $installPrompt = $(Write-Color "`t`tInstall? [", "Y", "/", "N", "]" -Color Yellow, Green, Yellow, Red, Yellow; Read-Host)
-        If ($installPrompt.ToUpper() -ne "Y") {
-            Write-Color "`tModule ", $moduleName, " not installed." -Color $foregroundColor, Yellow, $foregroundColor
+        $installPrompt = $(Write-Color "`t`tInstall? [", 'Y', '/', 'N', ']' -Color Yellow, Green, Yellow, Red, Yellow; Read-Host)
+        If ($installPrompt.ToUpper() -ne 'Y') {
+            Write-Color "`tModule ", $moduleName, ' not installed.' -Color $foregroundColor, Yellow, $foregroundColor
             break
         }
         Get-IsAdministrator
@@ -405,9 +407,9 @@ function Teams {
     } catch {
         Write-Warning "`tUnable to connect to $($MyInvocation.MyCommand.Name)"
         foreach ($e in $error[0..2]) {
-            if ($e.Exception.Message.Contains("AADSTS50076:")) {
+            if ($e.Exception.Message.Contains('AADSTS50076:')) {
                 Write-Warning "`tMFA error detected"
-                Write-Color "`tTry ", "Add-MFA", " and re-run ", $($MyInvocation.MyCommand.Name) -Color Yellow, Green, Yellow, Green
+                Write-Color "`tTry ", 'Add-MFA', ' and re-run ', $($MyInvocation.MyCommand.Name) -Color Yellow, Green, Yellow, Green
             }
         }
     }
@@ -418,7 +420,7 @@ function ExchangeServer {
         Invoke-ConnectedServiceCheck $serviceName
         if ($script:alreadyConnected -eq 0) {
             Write-Host "`t Connecting to $serviceName" -ForegroundColor Cyan
-            $serverFQDN = Read-Host -Prompt "Enter Exchange Server FQDN: "
+            $serverFQDN = Read-Host -Prompt 'Enter Exchange Server FQDN: '
             $exchangeServerSession = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri http://$serverFQDN/PowerShell/ -Authentication Kerberos -Credential $script:microsoftCredential
             Import-PSSession $exchangeServerSession -DisableNameChecking  
             
@@ -541,7 +543,7 @@ function SharePoint {
      
             Write-Host "`t Connecting to $serviceName" -ForegroundColor Cyan
             Write-Host "`tEnter your SharePoint organization name below:" -ForegroundColor Yellow
-            $orgName = $(Write-Color "`tExample: ", "https://", "tenantname", "-admin.sharepoint.com" -Color Yellow, $foregroundColor, Green, $foregroundColor; Read-Host)
+            $orgName = $(Write-Color "`tExample: ", 'https://', 'tenantname', '-admin.sharepoint.com' -Color Yellow, $foregroundColor, Green, $foregroundColor; Read-Host)
             # Check for and remove -admin
             if ($orgname -like '*-admin') {
                 $orgname = $orgName.split('-')[0]
@@ -561,9 +563,9 @@ function SharePoint {
         Write-Warning "`tUnable to connect to $($MyInvocation.MyCommand.Name)"
         Write-Warning 'Ensure that MFA is not required.'
         foreach ($e in $error[0..2]) {
-            if ($e.Exception.Message.Contains("AADSTS50076:")) {
+            if ($e.Exception.Message.Contains('AADSTS50076:')) {
                 Write-Warning "`tMFA error detected"
-                Write-Color "`tTry ", "Add-MFA", " and re-run ", $($MyInvocation.MyCommand.Name) -Color Yellow, Green, Yellow, Green
+                Write-Color "`tTry ", 'Add-MFA', ' and re-run ', $($MyInvocation.MyCommand.Name) -Color Yellow, Green, Yellow, Green
             }
         }
     }
@@ -591,9 +593,9 @@ function Security_Compliance {
     } catch {
         Write-Warning "`tUnable to connect to $($MyInvocation.MyCommand.Name)"
         foreach ($e in $error[0..2]) {
-            if ($e.Exception.Message.Contains("AADSTS50076:")) {
+            if ($e.Exception.Message.Contains('AADSTS50076:')) {
                 Write-Warning "`tMFA error detected"
-                Write-Color "`tTry ", "Add-MFA", " and re-run ", $($MyInvocation.MyCommand.Name) -Color Yellow, Green, Yellow, Green
+                Write-Color "`tTry ", 'Add-MFA', ' and re-run ', $($MyInvocation.MyCommand.Name) -Color Yellow, Green, Yellow, Green
             }
         }
     }
@@ -635,33 +637,33 @@ function Intune {
 function disconnect {
     foreach ($service in $script:connectedServices) {
         Switch ($service) {
-            "Teams" { 
+            'Teams' { 
                 Disconnect-MicrosoftTeams
             }
-            "ExchangeServer" {
+            'ExchangeServer' {
                 Remove-PSSession $exchangeServerSession
             }
-            "Exchange" { 
+            'Exchange' { 
                 Get-PSSession | Remove-PSSession
             }
-            "MSOnline" {
+            'MSOnline' {
                 [Microsoft.Online.Administration.Automation.ConnectMsolService]::ClearUserSessionState()
             }
-            "AzureAD" { 
+            'AzureAD' { 
                 Disconnect-AzureAD
             }
-            "SharePoint" { 
+            'SharePoint' { 
                 Disconnect-SPOService
             }
-            "Security_Compliance" { 
+            'Security_Compliance' { 
                 Disconnect-ExchangeOnline
             }
-            "Intune" { 
+            'Intune' { 
                 # No documented way to disconnect
             }
         }
         $script:joinedServices = $script:connectedServices | Where-Object { $_ -NE $service }
-        Write-Host "Disconnected Service: " $($service) -ForegroundColor Yellow
+        Write-Host 'Disconnected Service: ' $($service) -ForegroundColor Yellow
     }
     $script:connectedServices = @()
     $function:prompt = & { $script:userPrompt }
@@ -669,81 +671,65 @@ function disconnect {
 }
 
 function Invoke-CheckProfileUpdate {
-    <#
-    Import Update Preference 
-  
-    #! Need to add logic for import-credentials to pull in the update preference too
-  
-    #>
-    $script:updatePreference = $env:microsoftServicesProfileUpdates
-    # Ignore updates if the user has not set profile version checking
+    $script:updatePreference = $true
     if ($null -ne $script:updatePreference) {
-      $releases = 'https://api.github.com/repos/nikkelly/microsoftServicesProfile/releases'
-      $script:content = (Invoke-WebRequest $releases | Select-Object -Property Content).Content | ConvertFrom-Json
-      if ([Version]$script:content[0].tag_name -ge $script:version) {
-        # prompt user for download
-        Write-Host "
+        $releases = 'https://api.github.com/repos/nikkelly/microsoftServicesProfile/releases'
+        $script:content = (Invoke-WebRequest $releases | Select-Object -Property Content).Content | ConvertFrom-Json
+        if ([Version]$script:content[0].tag_name -ge $script:version) {
+            # prompt user for download
+            Write-Host "
         `t***************************************************************** 
         `t
         `t  New version of Microsoft Services Profile (v$($script:content[0].tag_name)) is available
         `t
         `t*****************************************************************
     " -ForegroundColor Yellow
-        Write-Color "`tCurrently installed version: ",$($script:Version) -Color Yellow, Red
-        $downloadUpdatedProfile = $(Write-Color "`tWould you like to download the updated version ",$($script:content[0].tag_name), " ? [", "Y", "/", "N", "]" -Color Yellow, Green, Yellow, Green, Yellow, Red, Yellow; Read-Host)
-        if (($downloadUpdatedProfile).ToUpper() -eq "Y") {
-          # download the latest profile 
-          Write-Color "`tDownloading the latest profile ", $($script:content[0].tag_name), " to path: ","$home\Downloads\microsoftServicesProfile_v$($script:content[0].tag_name).zip" -Color Yellow,Green,Yellow,White
-          #! download the latest release by url to $env:TEMP
-          $zipBall = $script:content[0].zipball_url
-          $script:newVersionPath = "$home\Downloads\microsoftServicesProfile$($script:content[0].tag_name).zip"
-          Invoke-RestMethod -Uri $zipBall -OutFile $home\Downloads\microsoftServicesProfile$($script:content[0].tag_name).zip
-          Write-Host "`tDownload Completed" -ForegroundColor Green
-          Invoke-Unzip  # this creates the backup and replaces the current
-          Write-Host "`tPlease restart PowerShell for profile update to take effect" -ForegroundColor Yellow
+            Write-Color "`tCurrently installed version: ", $($script:Version) -Color Yellow, Red
+            $downloadUpdatedProfile = $(Write-Color "`tWould you like to download the updated version ", $($script:content[0].tag_name), ' ? [', 'Y', '/', 'N', ']' -Color Yellow, Green, Yellow, Green, Yellow, Red, Yellow; Read-Host)
+            if (($downloadUpdatedProfile).ToUpper() -eq 'Y') {
+                # download the latest profile 
+                Write-Color "`tDownloading the latest profile ", $($script:content[0].tag_name), ' to path: ', "$home\Downloads\microsoftServicesProfile_v$($script:content[0].tag_name).zip" -Color Yellow, Green, Yellow, White
+                $zipBall = $script:content[0].zipball_url
+                $script:newVersionPath = "$home\Downloads\microsoftServicesProfile$($script:content[0].tag_name).zip"
+                Invoke-RestMethod -Uri $zipBall -OutFile $home\Downloads\microsoftServicesProfile$($script:content[0].tag_name).zip
+                Write-Host "`tDownload Completed" -ForegroundColor Green
+                Invoke-Unzip  # this creates the backup and replaces the current
+                Write-Host "`tPlease restart PowerShell for profile update to take effect" -ForegroundColor Yellow
+            }
         }
-      }
     }
-  }
-  function Invoke-Unzip {
-    # $script:microsoftNewVersionfile # "$home\Downloads\microsoftServicesProfile_v$($script:content[0].tag_name).zip" = "C:\Users\nikke\Downloads\microsoftServicesProfile1.1.zip"
-    # $script:installCommand = "Import-Module C:\Users\nikke\GitRepos\microsoftServicesProfile\microsoftServicesProfile.ps1 -Force #microsoftServicesProfile"
-    $script:microsoftProfilePath = $script:installCommand.Replace("Import-Module ", "")
-    $script:microsoftProfilePath = $script:microsoftProfilePath.Replace(" -Force", "")
-    Write-Color "`n`tReplacing current Microsoft Services Profile: ",$($script:microsoftProfilePath) -Color Yellow,White
-    $confirmFilePath = $(Write-Color "`tDoes this look correct? [", "Y", "/", "N", "]" -Color Yellow, Green, Yellow, Red, Yellow; Read-Host)
-    if (($confirmFilePath).ToUpper() -ne "Y") {
-      $filePathConfirmed -eq $false
-      $script:microsoftProfilePath = Read-Host "Enter Microsoft Services Profile path: "
-      $confirmFilePath = $(Write-Color "`tProceed with $($script:microsoftProfilePath) [", "Y", "/", "N", "]" -Color Yellow, Green, Yellow, Red, Yellow; Read-Host)
-      if (($confirmFilePath).ToUpper() -ne "Y") {
-        $filePathConfirmed = $false
-      } else { 
-        $filePathConfirmed = $true
-      }
+}
+function Invoke-Unzip {
+    $script:microsoftProfilePath = $script:installCommand.Replace('Import-Module ', '')
+    $script:microsoftProfilePath = $script:microsoftProfilePath.Replace(' -Force', '')
+    Write-Color "`n`tReplacing current Microsoft Services Profile: ", $($script:microsoftProfilePath) -Color Yellow, White
+    $confirmFilePath = $(Write-Color "`tDoes this look correct? [", 'Y', '/', 'N', ']' -Color Yellow, Green, Yellow, Red, Yellow; Read-Host)
+    if (($confirmFilePath).ToUpper() -ne 'Y') {
+        $filePathConfirmed -eq $false
+        $script:microsoftProfilePath = Read-Host 'Enter Microsoft Services Profile path: '
+        $confirmFilePath = $(Write-Color "`tProceed with $($script:microsoftProfilePath) [", 'Y', '/', 'N', ']' -Color Yellow, Green, Yellow, Red, Yellow; Read-Host)
+        if (($confirmFilePath).ToUpper() -ne 'Y') {
+            $filePathConfirmed = $false
+        } else { 
+            $filePathConfirmed = $true
+        }
     } else {
-      $filePathConfirmed = $true
+        $filePathConfirmed = $true
     }
     if ($filePathConfirmed -eq $true) {
-      # unzip and copy
-      $backupFileName = $script:microsoftProfilePath.Replace('.ps1', '_backup.ps1')
-      Copy-Item -Path $script:microsoftProfilePath -Destination $backupFileName
-      Write-Color "`tBacking up current microsoftServicesProfile to ", $backupFileName -Color Yellow, White
-      # unzip 
-      # $microsoftNewVersionfile = "microsoftServicesProfile-2.0.0\microsoftServicesProfile.ps1" # Folder Name
-      # save a copy of the current one
-  
-      # unzip the new version and copy it over the old 
-      # Expand-Archive -LiteralPath $script:microsoftNewVersionfile -DestinationPath $script:microsoftProfilePath -Force
-      Write-Color "Unzipping to ",$($env:TEMP) Yellow,White
-      Expand-Archive -LiteralPath $script:newVersionPath -DestinationPath $env:TEMP -Force
-      $newFileVersionFilePath = "$($env:TEMP)\microsoftServicesProfile-$($script:content[0].tag_name)\*\microsoftServicesProfile.ps1"
-      Copy-Item -LiteralPath $newFileVersionFilePath -Destination $script:microsoftProfilePath
+        # unzip and copy
+        $backupFileName = $script:microsoftProfilePath.Replace('.ps1', '_backup.ps1')
+        Copy-Item -Path $script:microsoftProfilePath -Destination $backupFileName -Force
+        Write-Color "`tBacking up current microsoftServicesProfile to ", $backupFileName -Color Yellow, White
+        Write-Color 'Unzipping to ', $($env:TEMP) Yellow, White
+        Expand-Archive -LiteralPath $script:newVersionPath -DestinationPath $env:TEMP -Force
+        $newFileVersionFilePath = (Get-ChildItem $env:TEMP\nikkelly-microsoftServicesProfile-*\microsoftServicesProfile.ps1).VersionInfo.FileName
+        Copy-Item -LiteralPath $newFileVersionFilePath -Destination $script:microsoftProfilePath -Force
       
     } else { 
-      Write-Error "Failed to confirm file path"
+        Write-Error 'Failed to confirm file path'
     }
-  }
+}
 # Run these on startup
 # Check for the -Install switch
 $script:installCommand = "Import-Module $($PSCommandPath) -Force" # this wouldn't be necessary if the it's created as a module
@@ -757,16 +743,16 @@ if ($install.IsPresent) {
         break
     } else {
         Add-Content $Profile -Value ($script:installCommand)
-        Write-Color -Text "Added command ", $script:installCommand, " to $($Profile)", "`n`tPlease reload PowerShell for changes to take effect." -Color $foregroundColor, Yellow, $foregroundColor, Green
+        Write-Color -Text 'Added command ', $script:installCommand, " to $($Profile)", "`n`tPlease reload PowerShell for changes to take effect." -Color $foregroundColor, Yellow, $foregroundColor, Green
         exit
     }
 }
 if ($uninstall.IsPresent) {
     if ((Get-Content $Profile | Select-String -Pattern ([regex]::Escape($script:installCommand))).Matches.Success) {
-    (Get-Content $Profile).Replace(($script:installCommand), "") | Set-Content $Profile
+    (Get-Content $Profile).Replace(($script:installCommand), '') | Set-Content $Profile
         Remove-Account
         Remove-MFA
-        Write-Color -Text "Removed ", $script:installCommand, " from $($Profile)", "`n`tPlease reload PowerShell for changes to take effect." -Color $foregroundColor, Yellow, $foregroundColor, Green
+        Write-Color -Text 'Removed ', $script:installCommand, " from $($Profile)", "`n`tPlease reload PowerShell for changes to take effect." -Color $foregroundColor, Yellow, $foregroundColor, Green
         break
     } else {
         Write-Color "`tProfile is not installed" -Color Red
