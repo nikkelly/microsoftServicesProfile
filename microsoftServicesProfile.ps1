@@ -24,7 +24,7 @@ param (
     [Switch]$install,
     [Switch]$uninstall
 )
-$version = "2.0"
+$version = [Version]"1.0.0"
 $foregroundColor = $host.UI.RawUI.ForegroundColor
 
 function Write-Color([String[]]$Text, [ConsoleColor[]]$Color) {
@@ -668,6 +668,82 @@ function disconnect {
     
 }
 
+function Invoke-CheckProfileUpdate {
+    <#
+    Import Update Preference 
+  
+    #! Need to add logic for import-credentials to pull in the update preference too
+  
+    #>
+    $script:updatePreference = $env:microsoftServicesProfileUpdates
+    # Ignore updates if the user has not set profile version checking
+    if ($null -ne $script:updatePreference) {
+      $releases = 'https://api.github.com/repos/nikkelly/microsoftServicesProfile/releases'
+      $script:content = (Invoke-WebRequest $releases | Select-Object -Property Content).Content | ConvertFrom-Json
+      if ([Version]$script:content[0].tag_name -ge $script:version) {
+        # prompt user for download
+        Write-Host "
+        `t***************************************************************** 
+        `t
+        `t  New version of Microsoft Services Profile (v$($script:content[0].tag_name)) is available
+        `t
+        `t*****************************************************************
+    " -ForegroundColor Yellow
+        Write-Color "`tCurrently installed version: ",$($script:Version) -Color Yellow, Red
+        $downloadUpdatedProfile = $(Write-Color "`tWould you like to download the updated version ",$($script:content[0].tag_name), " ? [", "Y", "/", "N", "]" -Color Yellow, Green, Yellow, Green, Yellow, Red, Yellow; Read-Host)
+        if (($downloadUpdatedProfile).ToUpper() -eq "Y") {
+          # download the latest profile 
+          Write-Color "`tDownloading the latest profile ", $($script:content[0].tag_name), " to path: ","$home\Downloads\microsoftServicesProfile_v$($script:content[0].tag_name).zip" -Color Yellow,Green,Yellow,White
+          #! download the latest release by url to $env:TEMP
+          $zipBall = $script:content[0].zipball_url
+          $script:newVersionPath = "$home\Downloads\microsoftServicesProfile$($script:content[0].tag_name).zip"
+          Invoke-RestMethod -Uri $zipBall -OutFile $home\Downloads\microsoftServicesProfile$($script:content[0].tag_name).zip
+          Write-Host "`tDownload Completed" -ForegroundColor Green
+          Invoke-Unzip  # this creates the backup and replaces the current
+          Write-Host "`tPlease restart PowerShell for profile update to take effect" -ForegroundColor Yellow
+        }
+      }
+    }
+  }
+  function Invoke-Unzip {
+    # $script:microsoftNewVersionfile # "$home\Downloads\microsoftServicesProfile_v$($script:content[0].tag_name).zip" = "C:\Users\nikke\Downloads\microsoftServicesProfile1.1.zip"
+    # $script:installCommand = "Import-Module C:\Users\nikke\GitRepos\microsoftServicesProfile\microsoftServicesProfile.ps1 -Force #microsoftServicesProfile"
+    $script:microsoftProfilePath = $script:installCommand.Replace("Import-Module ", "")
+    $script:microsoftProfilePath = $script:microsoftProfilePath.Replace(" -Force", "")
+    Write-Color "`n`tReplacing current Microsoft Services Profile: ",$($script:microsoftProfilePath) -Color Yellow,White
+    $confirmFilePath = $(Write-Color "`tDoes this look correct? [", "Y", "/", "N", "]" -Color Yellow, Green, Yellow, Red, Yellow; Read-Host)
+    if (($confirmFilePath).ToUpper() -ne "Y") {
+      $filePathConfirmed -eq $false
+      $script:microsoftProfilePath = Read-Host "Enter Microsoft Services Profile path: "
+      $confirmFilePath = $(Write-Color "`tProceed with $($script:microsoftProfilePath) [", "Y", "/", "N", "]" -Color Yellow, Green, Yellow, Red, Yellow; Read-Host)
+      if (($confirmFilePath).ToUpper() -ne "Y") {
+        $filePathConfirmed = $false
+      } else { 
+        $filePathConfirmed = $true
+      }
+    } else {
+      $filePathConfirmed = $true
+    }
+    if ($filePathConfirmed -eq $true) {
+      # unzip and copy
+      $backupFileName = $script:microsoftProfilePath.Replace('.ps1', '_backup.ps1')
+      Copy-Item -Path $script:microsoftProfilePath -Destination $backupFileName
+      Write-Color "`tBacking up current microsoftServicesProfile to ", $backupFileName -Color Yellow, White
+      # unzip 
+      # $microsoftNewVersionfile = "microsoftServicesProfile-2.0.0\microsoftServicesProfile.ps1" # Folder Name
+      # save a copy of the current one
+  
+      # unzip the new version and copy it over the old 
+      # Expand-Archive -LiteralPath $script:microsoftNewVersionfile -DestinationPath $script:microsoftProfilePath -Force
+      Write-Color "Unzipping to ",$($env:TEMP) Yellow,White
+      Expand-Archive -LiteralPath $script:newVersionPath -DestinationPath $env:TEMP -Force
+      $newFileVersionFilePath = "$($env:TEMP)\microsoftServicesProfile-$($script:content[0].tag_name)\*\microsoftServicesProfile.ps1"
+      Copy-Item -LiteralPath $newFileVersionFilePath -Destination $script:microsoftProfilePath
+      
+    } else { 
+      Write-Error "Failed to confirm file path"
+    }
+  }
 # Run these on startup
 # Check for the -Install switch
 $script:installCommand = "Import-Module $($PSCommandPath) -Force" # this wouldn't be necessary if the it's created as a module
