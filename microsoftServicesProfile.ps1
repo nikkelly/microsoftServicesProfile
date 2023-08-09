@@ -1,15 +1,4 @@
 
-function Write-ColoredText {
-    param (
-        [String[]]$Text,
-        [ConsoleColor[]]$Color,
-        [switch]$NewLine = $true
-    )
-    for ($i = 0; $i -lt $Text.Length; $i++) {
-        Write-Host $Text[$i] -Foreground $Color[$i] -NoNewline
-    }
-    if ($NewLine) { Write-Host }
-}
 <# microsoftServicesProfile.ps1
 .SYNOPSIS
 This profile is used to simplify connecting to Microsoft 365 services with PowerShell
@@ -31,12 +20,16 @@ param (
 )
 $version = '2.0'
 $foregroundColor = $host.UI.RawUI.ForegroundColor
-
-function Write-ColoredText( [String[]]$Text, [ConsoleColor[]]$Color) {
+function Write-ColoredText {
+    param (
+        [String[]]$Text,
+        [ConsoleColor[]]$Color,
+        [switch]$NewLine = $true
+    )
     for ($i = 0; $i -lt $Text.Length; $i++) {
         Write-Host $Text[$i] -Foreground $Color[$i] -NoNewline
     }
-    Write-Host
+    if ($NewLine) { Write-Host }
 }
 function Invoke-DisplayCommand {
     Write-Host "`nConnect to Microsoft online services with these commands: " -ForegroundColor Green
