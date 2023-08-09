@@ -1,17 +1,17 @@
 <# microsoftServicesProfile.ps1
-    .SYNOPSIS
-    This profile is used to simplify connecting to Microsoft 365 services with PowerShell
-    .DESCRIPTION
-    This script can be used to authenticate your management account to all Microsoft 365 services.
-    .EXAMPLE
-    .\microsoftServicesProfile -Install
-        Add the Microsoft Services Profile to your current PowerShell $profile
-    Teams
-        Connect to Teams using the MicrosoftTeams Powershell module
-    Invoke-AddAccount
-        Save your management account information to an environment variable
-    .NOTES
-    Name: microsoftServicesProfile
+.SYNOPSIS
+This profile is used to simplify connecting to Microsoft 365 services with PowerShell
+.DESCRIPTION
+This script can be used to authenticate your management account to all Microsoft 365 services.
+.EXAMPLE
+.\microsoftServicesProfile -Install
+Add the Microsoft Services Profile to your current PowerShell $profile
+Teams
+Connect to Teams using the MicrosoftTeams Powershell module
+Invoke-AddAccount
+Save your management account information to an environment variable
+.NOTES
+Name: microsoftServicesProfile
 #>
 param (
     [Switch]$install,
@@ -20,7 +20,7 @@ param (
 $version = '2.0'
 $foregroundColor = $host.UI.RawUI.ForegroundColor
 
-function Write-Color([String[]]$Text, [ConsoleColor[]]$Color) {
+function Write-Color( [String[]]$Text, [ConsoleColor[]]$Color) {
     for ($i = 0; $i -lt $Text.Length; $i++) {
         Write-Host $Text[$i] -Foreground $Color[$i] -NoNewline
     }
@@ -142,11 +142,11 @@ function Invoke-DisplayAccount {
 }
 Function Get-IsAdministrator {
     <#
-        Determine if the script is running in the context of an administrator or not
+    Determine if the script is running in the context of an administrator or not
     #>
     Write-Host "`tChecking for administrative privileges." -ForegroundColor Yellow
-    $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
-    $script:isAdmin = $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    $currentPrincipal = New-Object Security.Principal.WindowsPrincipal( [Security.Principal.WindowsIdentity]::GetCurrent())
+    $script:isAdmin = $currentPrincipal.IsInRole( [Security.Principal.WindowsBuiltInRole]::Administrator)
     if ($null -ne $script:isAdmin) {
         Write-Host "`tUser is an admin" -ForegroundColor Green
     }
@@ -154,7 +154,7 @@ Function Get-IsAdministrator {
 #TODO Need to check if there's an updated version, and then use this to remove the old one
 Function Uninstall-OldModule {
     <#
-        Removes old versions of a module
+    Removes old versions of a module
     #>
     Param(
         $Module
@@ -313,7 +313,7 @@ function Import-Credential {
     $script:microsoftCredential = $null
     # Check for saved username
     if (Test-Path env:microsoftConnectionUser) {
-        $script:microsoftUser = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR((ConvertTo-SecureString ($env:microsoftconnectionUser))))
+        $script:microsoftUser = [Runtime.InteropServices.Marshal]::PtrToStringAuto( [Runtime.InteropServices.Marshal]::SecureStringToBSTR((ConvertTo-SecureString ($env:microsoftconnectionUser))))
     }
     # Check for saved password
     if (Test-Path env:microsoftConnectionPass) {
@@ -396,7 +396,7 @@ function Teams {
         }
     } catch {
         Write-Warning "`tUnable to connect to $($MyInvocation.MyCommand.Name)"
-        foreach ($e in $error[0..2]) {
+        foreach ($e in $error[0..2] ) {
             if ($e.Exception.Message.Contains('AADSTS50076:')) {
                 Write-Warning "`tMFA error detected"
                 Write-Color "`tTry ", 'Invoke-AddMFA', ' and re-run ', $($MyInvocation.MyCommand.Name) -Color Yellow, Green, Yellow, Green
@@ -543,7 +543,7 @@ function SharePoint {
     } catch {
         Write-Warning "`tUnable to connect to $($MyInvocation.MyCommand.Name)"
         Write-Warning 'Ensure that MFA is not required.'
-        foreach ($e in $error[0..2]) {
+        foreach ($e in $error[0..2] ) {
             if ($e.Exception.Message.Contains('AADSTS50076:')) {
                 Write-Warning "`tMFA error detected"
                 Write-Color "`tTry ", 'Invoke-AddMFA', ' and re-run ', $($MyInvocation.MyCommand.Name) -Color Yellow, Green, Yellow, Green
@@ -571,7 +571,7 @@ function Security_Compliance {
         }
     } catch {
         Write-Warning "`tUnable to connect to $($MyInvocation.MyCommand.Name)"
-        foreach ($e in $error[0..2]) {
+        foreach ($e in $error[0..2] ) {
             if ($e.Exception.Message.Contains('AADSTS50076:')) {
                 Write-Warning "`tMFA error detected"
                 Write-Color "`tTry ", 'Invoke-AddMFA', ' and re-run ', $($MyInvocation.MyCommand.Name) -Color Yellow, Green, Yellow, Green
@@ -588,7 +588,7 @@ function Intune {
             # Loading MSonline before Intune can cause issues
             if ($script:connectedServices -contains 'MSOnline') {
                 Write-Color "`t*************", "`t`nImporting the MSOnline cmdlets before importing this Intune module will cause errors. Please use the AzureAD module instead, as the MSOnline module is deprecated.
-    If you absolutely must use the MSOnline module, it should be imported AFTER the Intune module. Note, however, that this is not officially supported. More info available here:", "https://github.com/Microsoft/Intune-PowerShell-SDK`n", "`t*************" -Color Yellow, $foregroundColor, Cyan, Yellow
+            If you absolutely must use the MSOnline module, it should be imported AFTER the Intune module. Note, however, that this is not officially supported. More info available here:", "https://github.com/Microsoft/Intune-PowerShell-SDK`n", "`t*************" -Color Yellow, $foregroundColor, Cyan, Yellow
             }
             # Check if module is installed
             Invoke-ModuleCheck -moduleName $moduleName
@@ -655,7 +655,7 @@ if ($install.IsPresent) {
     if (!(Test-Path -Path $Profile)) {
         New-Item -ItemType File -Path $Profile -Force
     }
-    if ((Get-Content $Profile | Select-String -Pattern ([regex]::Escape($script:installCommand))).Matches.Success) {
+    if ((Get-Content $Profile | Select-String -Pattern ( [regex]::Escape($script:installCommand))).Matches.Success) {
         Write-Color "`tProfile is already installed" -Color Red
         break
     } else {
@@ -665,7 +665,7 @@ if ($install.IsPresent) {
     }
 }
 if ($uninstall.IsPresent) {
-    if ((Get-Content $Profile | Select-String -Pattern ([regex]::Escape($script:installCommand))).Matches.Success) {
+    if ((Get-Content $Profile | Select-String -Pattern ( [regex]::Escape($script:installCommand))).Matches.Success) {
     (Get-Content $Profile).Replace(($script:installCommand), '') | Set-Content $Profile
         Clear-Account
         Clear-MFA
