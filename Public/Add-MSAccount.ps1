@@ -68,6 +68,6 @@ function Add-MSAccount {
 
     } catch {
         Write-Warning "Unable to add account"
-        Write-Warning $Error[0].Exception.Message
+        Write-Warning $_.Exception.Message
     }
 }

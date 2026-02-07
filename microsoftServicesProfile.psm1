@@ -38,7 +38,7 @@ $script:MSProfileState = @{
         Major        = $PSVersionTable.PSVersion.Major
         Minor        = $PSVersionTable.PSVersion.Minor
         IsCore       = $PSVersionTable.PSEdition -eq 'Core'
-        IsWindows    = $IsWindows -or ($PSVersionTable.PSVersion.Major -lt 6)
+        IsWindows    = ($PSVersionTable.PSVersion.Major -lt 6) -or (Get-Variable -Name IsWindows -ValueOnly -ErrorAction SilentlyContinue)
         SupportsAzureAD = $PSVersionTable.PSVersion.Major -lt 7
         RequiresGraph   = $PSVersionTable.PSVersion.Major -ge 7
     }
