@@ -13,6 +13,7 @@ function Update-ConnectedServices {
     .EXAMPLE
         Update-ConnectedServices -ServiceName 'Teams'
     #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Plural is intentional - manages multiple connected services')]
     [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory)]
