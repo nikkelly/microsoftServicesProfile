@@ -28,7 +28,8 @@ function Import-MSCredential {
                 [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureUser)
             )
         } catch {
-            Write-Verbose "Failed to import username: $_"
+            Write-Warning "Failed to decrypt saved username. Credentials may need to be re-saved with Add-MSAccount."
+            Write-Verbose "Decryption error: $_"
         }
     }
 
@@ -41,7 +42,8 @@ function Import-MSCredential {
                 $script:MSProfileState.Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $script:MSProfileState.MicrosoftUser, $securePass
             }
         } catch {
-            Write-Verbose "Failed to import password: $_"
+            Write-Warning "Failed to decrypt saved password. Credentials may need to be re-saved with Add-MSAccount."
+            Write-Verbose "Decryption error: $_"
         }
     }
 

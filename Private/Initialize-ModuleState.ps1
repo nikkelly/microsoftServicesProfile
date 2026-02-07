@@ -55,7 +55,8 @@ function Import-MSAppRegistration {
         try {
             $script:MSProfileState.AppRegistration.ClientSecret = ConvertTo-SecureString $env:microsoftConnectionClientSecret -ErrorAction Stop
         } catch {
-            Write-Verbose "Failed to import client secret: $_"
+            Write-Warning "Failed to decrypt saved client secret. Re-configure with Add-MSAppRegistration."
+            Write-Verbose "Decryption error: $_"
         }
     }
 
