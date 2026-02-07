@@ -95,34 +95,15 @@ function Add-MSAppRegistration {
     Write-Host "`t  Tenant ID: $TenantId" -ForegroundColor Gray
     Write-Host "`t  Auth Type: $(if ($CertificateThumbprint) { 'Certificate' } else { 'Client Secret' })" -ForegroundColor Gray
 
-    # Save if requested
-    if ($Save) {
-        Write-Host "`tSaving app registration to environment variables..." -ForegroundColor Yellow
-
-        [Environment]::SetEnvironmentVariable('microsoftConnectionAppId', $AppId, 'User')
-        [Environment]::SetEnvironmentVariable('microsoftConnectionTenantId', $TenantId, 'User')
-        [Environment]::SetEnvironmentVariable('microsoftConnectionAuthMethod', 'ServicePrincipal', 'User')
-
-        if ($CertificateThumbprint) {
-            [Environment]::SetEnvironmentVariable('microsoftConnectionCertThumbprint', $CertificateThumbprint, 'User')
-        }
-
-        if ($ClientSecret) {
-            try {
-                $encrypted = ConvertFrom-SecureString $ClientSecret
-                [Environment]::SetEnvironmentVariable('microsoftConnectionClientSecret', $encrypted, 'User')
-            } catch {
-                Write-Warning "Failed to save client secret: $_"
-            }
-        }
-
-        Write-Host "`tApp registration saved successfully." -ForegroundColor Green
-        Write-Host "`n`tPlease close and reopen PowerShell for changes to take effect.`n" -ForegroundColor Green
-    } else {
-        # Prompt to save
+    # Save if requested or prompted
+    if (-not $Save) {
         $saveChoice = $(Write-ColorOutput -Text "`tSave app registration for later? [", "Y", "/", "N", "]" -Color Yellow, Green, Yellow, Red, Yellow; Read-Host)
         if ($saveChoice.ToUpper() -eq "Y") {
-            Add-MSAppRegistration -AppId $AppId -TenantId $TenantId -CertificateThumbprint $CertificateThumbprint -ClientSecret $ClientSecret -Save
+            $Save = $true
         }
+    }
+
+    if ($Save) {
+        Export-MSAppRegistration
     }
 }

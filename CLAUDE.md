@@ -48,6 +48,7 @@ microsoftServicesProfile/
 │   ├── Test-ModuleAvailable.ps1
 │   ├── Get-MSCredential.ps1
 │   ├── Export-MSCredential.ps1
+│   ├── Export-MSAppRegistration.ps1
 │   ├── Import-MSCredential.ps1
 │   ├── Update-ConnectedServices.ps1
 │   ├── Test-AlreadyConnected.ps1
