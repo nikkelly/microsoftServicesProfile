@@ -42,12 +42,16 @@ function Export-MSCredential {
     } else {
         try {
             $secureUser = [System.Security.SecureString]::new()
-            foreach ($char in $Credential.UserName.ToCharArray()) {
-                $secureUser.AppendChar($char)
+            try {
+                foreach ($char in $Credential.UserName.ToCharArray()) {
+                    $secureUser.AppendChar($char)
+                }
+                $encryptedUser = ConvertFrom-SecureString $secureUser
+                [System.Environment]::SetEnvironmentVariable('microsoftConnectionUser', $encryptedUser, [System.EnvironmentVariableTarget]::User)
+                $userSaved = $true
+            } finally {
+                $secureUser.Dispose()
             }
-            $encryptedUser = ConvertFrom-SecureString $secureUser
-            [System.Environment]::SetEnvironmentVariable('microsoftConnectionUser', $encryptedUser, [System.EnvironmentVariableTarget]::User)
-            $userSaved = $true
         } catch {
             Write-Warning "Failed to save username: $_"
             $userSaved = $false

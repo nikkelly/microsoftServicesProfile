@@ -24,9 +24,12 @@ function Import-MSCredential {
     if (Test-Path env:microsoftConnectionUser) {
         try {
             $secureUser = ConvertTo-SecureString $env:microsoftConnectionUser -ErrorAction Stop
-            $script:MSProfileState.MicrosoftUser = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
-                [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureUser)
-            )
+            $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureUser)
+            try {
+                $script:MSProfileState.MicrosoftUser = [Runtime.InteropServices.Marshal]::PtrToStringAuto($bstr)
+            } finally {
+                [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
+            }
         } catch {
             Write-Warning "Failed to decrypt saved username. Credentials may need to be re-saved with Add-MSAccount."
             Write-Verbose "Decryption error: $_"
