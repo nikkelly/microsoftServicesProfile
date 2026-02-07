@@ -1,0 +1,18 @@
+# Claude Code local settings
+.claude/
+
+# PowerShell artifacts
+*.log
+*.psd1.bak
+*.psm1.bak
+
+# Windows artifacts
+Thumbs.db
+Desktop.ini
+
+# VS Code
+.vscode/
+
+# Credentials (never commit)
+*.cred
+*.credential
