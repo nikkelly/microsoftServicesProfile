@@ -9,7 +9,7 @@
     CompatiblePSEditions = @('Desktop', 'Core')
 
     # ID used to uniquely identify this module
-    GUID = 'f8d7e3c2-5a1b-4c9d-8e0f-6b2a3d4c5e6f'
+    GUID = '5a04253b-37ad-4e88-98f5-da0f3768e5ab'
 
     # Author of this module
     Author = 'nikkelly'
@@ -80,7 +80,7 @@
             Tags = @('Microsoft365', 'Azure', 'Teams', 'Exchange', 'SharePoint', 'AzureAD', 'Graph', 'Intune', 'Office365')
 
             # A URL to the license for this module.
-            LicenseUri = ''
+            LicenseUri = 'https://github.com/nikkelly/microsoftServicesProfile/blob/main/LICENSE'
 
             # A URL to the main website for this project.
             ProjectUri = 'https://github.com/nikkelly/microsoftServicesProfile'
