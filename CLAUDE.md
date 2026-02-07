@@ -45,7 +45,6 @@ microsoftServicesProfile/
 │   └── Show-MSCommands.ps1           # Help display
 ├── Private/                           # Internal helper functions
 │   ├── Write-ColorOutput.ps1
-│   ├── Get-PSVersionInfo.ps1
 │   ├── Test-ModuleAvailable.ps1
 │   ├── Get-MSCredential.ps1
 │   ├── Export-MSCredential.ps1

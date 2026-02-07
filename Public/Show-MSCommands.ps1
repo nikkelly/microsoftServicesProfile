@@ -22,7 +22,8 @@ function Show-MSCommands {
         [switch]$Quiet
     )
 
-    $version = "3.0.0"
+    $mod = Get-Module microsoftServicesProfile
+    $version = if ($mod) { $mod.Version.ToString() } else { '3.0.0' }
     $versionInfo = $script:MSProfileState.PSVersionInfo
     $foregroundColor = $script:MSProfileState.ForegroundColor
 

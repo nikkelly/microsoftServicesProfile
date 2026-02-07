@@ -31,7 +31,7 @@ function Test-ModuleAvailable {
     # Check for deprecated modules
     $deprecatedModules = @{
         'MSOnline'              = 'MSOnline is deprecated. Consider using Microsoft.Graph module.'
-        'AzureAD'               = 'AzureAD module is being retired March 2025. Microsoft.Graph is the replacement.'
+        'AzureAD'               = 'AzureAD module has been retired. Microsoft.Graph is the replacement.'
         'AzureADPreview'        = 'AzureADPreview is being retired. Microsoft.Graph is the replacement.'
         'Microsoft.Graph.Intune' = 'Microsoft.Graph.Intune is deprecated. Use Microsoft.Graph module instead.'
     }

@@ -42,6 +42,7 @@ $script:MSProfileState = @{
         SupportsAzureAD = $PSVersionTable.PSVersion.Major -lt 7
         RequiresGraph   = $PSVersionTable.PSVersion.Major -ge 7
     }
+    ExchangeServerSession = $null
     OriginalPrompt        = $null
     ForegroundColor       = try {
         $fc = $host.UI.RawUI.ForegroundColor
