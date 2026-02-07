@@ -43,7 +43,10 @@ $script:MSProfileState = @{
         RequiresGraph   = $PSVersionTable.PSVersion.Major -ge 7
     }
     OriginalPrompt        = $null
-    ForegroundColor       = $host.UI.RawUI.ForegroundColor
+    ForegroundColor       = try {
+        $fc = $host.UI.RawUI.ForegroundColor
+        if ($fc -is [ConsoleColor] -and [int]$fc -ge 0) { $fc } else { [ConsoleColor]::Gray }
+    } catch { [ConsoleColor]::Gray }
 }
 
 # Dot-source all Private function files first
