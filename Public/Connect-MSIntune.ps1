@@ -81,15 +81,17 @@ function Connect-MSIntune {
 
         Write-Host "`t Connecting to $serviceName" -ForegroundColor Cyan
 
+        # Note: These calls target the Intune SDK's Connect-MSGraph cmdlet (not this module's function).
+        # Module-qualified to avoid name collision with this module's Connect-MSGraph.
         switch ($AuthMethod) {
             'ServicePrincipal' {
                 Write-Warning "Service principal authentication for Intune works best with Microsoft Graph."
                 Write-Warning "Consider upgrading to PowerShell 7+ for better Intune support."
 
                 if ($AdminConsent) {
-                    Connect-MSGraph -AdminConsent
+                    Microsoft.Graph.Intune\Connect-MSGraph -AdminConsent -ErrorAction Stop
                 } else {
-                    Connect-MSGraph
+                    Microsoft.Graph.Intune\Connect-MSGraph -ErrorAction Stop
                 }
             }
             'Credential' {
@@ -98,23 +100,23 @@ function Connect-MSIntune {
                     Write-Warning "No credential available. Use Add-MSAccount to configure credentials."
                     return
                 }
-                Connect-MSGraph -PSCredential $cred
+                Microsoft.Graph.Intune\Connect-MSGraph -PSCredential $cred -ErrorAction Stop
             }
             default {
                 # Interactive
                 if ($script:MSProfileState.MFAEnabled) {
                     if ($AdminConsent) {
-                        Connect-MSGraph -AdminConsent
+                        Microsoft.Graph.Intune\Connect-MSGraph -AdminConsent -ErrorAction Stop
                     } else {
-                        Connect-MSGraph
+                        Microsoft.Graph.Intune\Connect-MSGraph -ErrorAction Stop
                     }
                 } elseif ($script:MSProfileState.Credential) {
-                    Connect-MSGraph -PSCredential $script:MSProfileState.Credential
+                    Microsoft.Graph.Intune\Connect-MSGraph -PSCredential $script:MSProfileState.Credential -ErrorAction Stop
                 } else {
                     if ($AdminConsent) {
-                        Connect-MSGraph -AdminConsent
+                        Microsoft.Graph.Intune\Connect-MSGraph -AdminConsent -ErrorAction Stop
                     } else {
-                        Connect-MSGraph
+                        Microsoft.Graph.Intune\Connect-MSGraph -ErrorAction Stop
                     }
                 }
             }
