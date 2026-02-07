@@ -59,7 +59,7 @@ function Connect-MSSharePoint {
             if ($OrgName) {
                 # Remove -admin suffix if present
                 if ($OrgName -like '*-admin') {
-                    $OrgName = $OrgName.Split('-')[0]
+                    $OrgName = $OrgName -replace '-admin$', ''
                 }
                 $adminUrl = "https://$OrgName-admin.sharepoint.com"
             } else {
@@ -75,7 +75,7 @@ function Connect-MSSharePoint {
 
                 # Remove -admin suffix if present
                 if ($inputOrgName -like '*-admin') {
-                    $inputOrgName = $inputOrgName.Split('-')[0]
+                    $inputOrgName = $inputOrgName -replace '-admin$', ''
                 }
                 $adminUrl = "https://$inputOrgName-admin.sharepoint.com"
             }
