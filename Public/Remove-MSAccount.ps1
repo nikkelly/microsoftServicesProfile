@@ -27,6 +27,7 @@ function Remove-MSAccount {
     try {
         if ((Test-Path env:microsoftConnectionUser) -and $PSCmdlet.ShouldProcess('microsoftConnectionUser', 'Remove environment variable')) {
             [System.Environment]::SetEnvironmentVariable("microsoftConnectionUser", $null, "User")
+            Remove-Item env:microsoftConnectionUser -ErrorAction SilentlyContinue
             $script:MSProfileState.MicrosoftUser = $null
             $script:MSProfileState.Domain = $null
             Write-Host "`tMicrosoft connection user removed" -ForegroundColor Yellow
@@ -40,6 +41,7 @@ function Remove-MSAccount {
     try {
         if ((Test-Path env:microsoftConnectionPass) -and $PSCmdlet.ShouldProcess('microsoftConnectionPass', 'Remove environment variable')) {
             [System.Environment]::SetEnvironmentVariable("microsoftConnectionPass", $null, "User")
+            Remove-Item env:microsoftConnectionPass -ErrorAction SilentlyContinue
             $script:MSProfileState.Credential = $null
             Write-Host "`tMicrosoft connection password removed" -ForegroundColor Yellow
             $removedItems += 'Password'
@@ -53,6 +55,7 @@ function Remove-MSAccount {
         try {
             if ((Test-Path env:microsoftConnectionMFA) -and $PSCmdlet.ShouldProcess('microsoftConnectionMFA', 'Remove environment variable')) {
                 [System.Environment]::SetEnvironmentVariable("microsoftConnectionMFA", $null, "User")
+                Remove-Item env:microsoftConnectionMFA -ErrorAction SilentlyContinue
                 $script:MSProfileState.MFAEnabled = $false
                 Write-Host "`tMicrosoft connection MFA removed" -ForegroundColor Yellow
                 $removedItems += 'MFA'
@@ -63,7 +66,7 @@ function Remove-MSAccount {
     }
 
     if ($removedItems.Count -gt 0) {
-        Write-Host "`n`tPlease close and reopen your PowerShell window for changes to take effect.`n" -ForegroundColor Green
+        Write-Host "`n`tCredentials removed from this session and persistent storage.`n" -ForegroundColor Green
     } else {
         Write-Host "`tNo saved account found to remove." -ForegroundColor Yellow
     }

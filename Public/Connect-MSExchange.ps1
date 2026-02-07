@@ -104,6 +104,6 @@ function Connect-MSExchange {
 
     } catch {
         Write-Warning "`tUnable to connect to Exchange Online"
-        Write-Warning $Error[0].Exception.Message
+        Write-Warning $_.Exception.Message
     }
 }

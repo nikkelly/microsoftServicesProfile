@@ -68,7 +68,7 @@ function Connect-MSExchangeServer {
 
     } catch {
         Write-Warning "`tUnable to connect to Exchange Server"
-        Write-Warning $Error[0].Exception.Message
+        Write-Warning $_.Exception.Message
         Write-Warning "Ensure Kerberos authentication is configured and credentials are valid."
     }
 }

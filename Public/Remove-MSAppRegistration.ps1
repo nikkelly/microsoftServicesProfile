@@ -26,6 +26,7 @@ function Remove-MSAppRegistration {
     foreach ($var in $envVars) {
         if ((Test-Path "env:$var") -and $PSCmdlet.ShouldProcess($var, 'Remove environment variable')) {
             [Environment]::SetEnvironmentVariable($var, $null, 'User')
+            Remove-Item "env:$var" -ErrorAction SilentlyContinue
             Write-Host "`t$var removed" -ForegroundColor Yellow
             $removedItems += $var
         }
@@ -43,8 +44,7 @@ function Remove-MSAppRegistration {
     }
 
     if ($removedItems.Count -gt 0) {
-        Write-Host "`n`tApp registration cleared." -ForegroundColor Green
-        Write-Host "`tPlease restart PowerShell for changes to take full effect.`n" -ForegroundColor Green
+        Write-Host "`n`tApp registration cleared from this session and persistent storage.`n" -ForegroundColor Green
     } else {
         Write-Host "`tNo app registration found to remove." -ForegroundColor Yellow
     }

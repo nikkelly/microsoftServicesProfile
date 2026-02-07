@@ -47,9 +47,11 @@ function Import-MSCredential {
         }
     }
 
-    # Extract domain from username
+    # Extract domain from username (clear stale domain if no @)
     if ($script:MSProfileState.MicrosoftUser -match '@') {
         $script:MSProfileState.Domain = $script:MSProfileState.MicrosoftUser.Split('@')[-1]
+    } else {
+        $script:MSProfileState.Domain = $null
     }
 
     return $script:MSProfileState.Credential

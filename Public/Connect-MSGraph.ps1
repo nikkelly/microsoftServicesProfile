@@ -116,9 +116,9 @@ function Connect-MSGraph {
 
     } catch {
         Write-Warning "`tUnable to connect to Microsoft Graph"
-        Write-Warning $Error[0].Exception.Message
+        Write-Warning $_.Exception.Message
 
-        if ($Error[0].Exception.Message -match "AADSTS700016") {
+        if ($_.Exception.Message -match "AADSTS700016") {
             Write-Warning "`tApp registration not found in tenant. Verify the AppId and TenantId."
         }
     }

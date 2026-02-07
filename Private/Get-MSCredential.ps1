@@ -44,9 +44,11 @@ function Get-MSCredential {
     $script:MSProfileState.Credential = $credential
     $script:MSProfileState.MicrosoftUser = $credential.UserName
 
-    # Extract domain from username
+    # Extract domain from username (clear stale domain if no @)
     if ($credential.UserName -match '@') {
         $script:MSProfileState.Domain = $credential.UserName.Split('@')[-1]
+    } else {
+        $script:MSProfileState.Domain = $null
     }
 
     return $credential

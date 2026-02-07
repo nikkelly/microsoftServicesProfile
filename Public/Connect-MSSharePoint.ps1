@@ -116,15 +116,12 @@ function Connect-MSSharePoint {
     } catch {
         Write-Warning "`tUnable to connect to SharePoint Online"
 
-        # Check for MFA error
-        foreach ($e in $Error[0..2]) {
-            if ($e.Exception.Message -match "AADSTS50076") {
-                Write-Warning "`tMFA error detected"
-                Write-ColorOutput -Text "`tTry ", "Add-MSMFA", " and re-run ", "Connect-MSSharePoint" -Color Yellow, Green, Yellow, Green
-                return
-            }
+        if ($_.Exception.Message -match "AADSTS50076") {
+            Write-Warning "`tMFA error detected"
+            Write-ColorOutput -Text "`tTry ", "Add-MSMFA", " and re-run ", "Connect-MSSharePoint" -Color Yellow, Green, Yellow, Green
+            return
         }
 
-        Write-Warning $Error[0].Exception.Message
+        Write-Warning $_.Exception.Message
     }
 }

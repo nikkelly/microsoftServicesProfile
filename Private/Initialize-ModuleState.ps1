@@ -13,8 +13,8 @@ function Initialize-ModuleState {
     [CmdletBinding()]
     param()
 
-    # Import MFA status
-    $script:MSProfileState.MFAEnabled = Test-Path env:microsoftConnectionMFA
+    # Import MFA status (check value, not just presence)
+    $script:MSProfileState.MFAEnabled = $env:microsoftConnectionMFA -eq 'true'
 
     # Import credentials
     Import-MSCredential | Out-Null

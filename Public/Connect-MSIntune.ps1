@@ -129,6 +129,6 @@ function Connect-MSIntune {
         Write-Host "`tYou may need to connect with 'Connect-MSIntune -AdminConsent'" -ForegroundColor Yellow
         Write-Host "`tMore Info: https://github.com/Microsoft/Intune-PowerShell-SDK" -ForegroundColor Yellow
         Write-Warning "`tUnable to connect to Intune"
-        Write-Warning $Error[0].Exception.Message
+        Write-Warning $_.Exception.Message
     }
 }

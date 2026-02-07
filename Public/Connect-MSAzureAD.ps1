@@ -116,7 +116,7 @@ function Connect-MSAzureAD {
 
     } catch {
         Write-Warning "`tUnable to connect to Azure AD"
-        Write-Warning $Error[0].Exception.Message
+        Write-Warning $_.Exception.Message
         Write-Warning "Ensure that MFA is configured correctly if required."
     }
 }

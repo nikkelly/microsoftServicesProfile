@@ -15,6 +15,7 @@ function Remove-MSMFA {
     if ($PSCmdlet.ShouldProcess('microsoftConnectionMFA', 'Remove MFA environment variable')) {
         try {
             [Environment]::SetEnvironmentVariable("microsoftConnectionMFA", $null, "User")
+            Remove-Item env:microsoftConnectionMFA -ErrorAction SilentlyContinue
             $script:MSProfileState.MFAEnabled = $false
             Write-Host "`tMFA disabled" -ForegroundColor Yellow
         } catch {
