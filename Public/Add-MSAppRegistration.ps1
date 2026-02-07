@@ -29,7 +29,7 @@ function Add-MSAppRegistration {
         $secret = Read-Host -AsSecureString
         Add-MSAppRegistration -AppId "12345-abcd" -TenantId "contoso.onmicrosoft.com" -ClientSecret $secret -Save
     #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory)]
         [string]$AppId,
@@ -75,6 +75,10 @@ function Add-MSAppRegistration {
                 return
             }
         }
+    }
+
+    if (-not $PSCmdlet.ShouldProcess("App Registration (AppId: $AppId)", 'Configure service principal authentication')) {
+        return
     }
 
     # Update module state

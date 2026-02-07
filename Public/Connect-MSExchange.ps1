@@ -104,6 +104,13 @@ function Connect-MSExchange {
 
     } catch {
         Write-Warning "`tUnable to connect to Exchange Online"
+
+        if ($_.Exception.Message -match "AADSTS50076") {
+            Write-Warning "`tMFA error detected"
+            Write-ColorOutput -Text "`tTry ", "Add-MSMFA", " and re-run ", "Connect-MSExchange" -Color Yellow, Green, Yellow, Green
+            return
+        }
+
         Write-Warning $_.Exception.Message
     }
 }

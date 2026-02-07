@@ -16,21 +16,23 @@ function Add-MSMFA {
     .EXAMPLE
         Add-MSMFA -Save
     #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         [switch]$Save
     )
 
-    $script:MSProfileState.MFAEnabled = $true
+    if ($PSCmdlet.ShouldProcess('MFA setting', 'Enable MFA mode')) {
+        $script:MSProfileState.MFAEnabled = $true
 
-    if ($Save) {
-        try {
-            [System.Environment]::SetEnvironmentVariable('microsoftConnectionMFA', 'true', [System.EnvironmentVariableTarget]::User)
-            Write-Host "`tMFA Saved: True" -ForegroundColor Green
-        } catch {
-            Write-Warning "Failed to save MFA setting: $_"
+        if ($Save) {
+            try {
+                [System.Environment]::SetEnvironmentVariable('microsoftConnectionMFA', 'true', [System.EnvironmentVariableTarget]::User)
+                Write-Host "`tMFA Saved: True" -ForegroundColor Green
+            } catch {
+                Write-Warning "Failed to save MFA setting: $_"
+            }
+        } else {
+            Write-Host "`tMFA enabled for this session" -ForegroundColor Green
         }
-    } else {
-        Write-Host "`tMFA enabled for this session" -ForegroundColor Green
     }
 }

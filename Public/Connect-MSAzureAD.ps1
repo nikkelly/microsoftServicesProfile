@@ -44,27 +44,29 @@ function Connect-MSAzureAD {
     $moduleName = 'AzureAD'
     $versionInfo = $script:MSProfileState.PSVersionInfo
 
-    # Check if already connected
-    if (Test-AlreadyConnected -ServiceName $serviceName) {
-        return
-    }
-
-    # PowerShell 7+ - redirect to Microsoft Graph
-    if ($versionInfo.RequiresGraph) {
-        Write-Warning "AzureAD module is not supported in PowerShell 7+."
-        Write-Host "`tRedirecting to Microsoft Graph..." -ForegroundColor Cyan
-        # Filter out parameters that Connect-MSGraph doesn't accept
-        $graphParams = @{}
-        foreach ($key in $PSBoundParameters.Keys) {
-            if ($key -in @('AuthMethod', 'TenantId')) {
-                $graphParams[$key] = $PSBoundParameters[$key]
-            }
-        }
-        Connect-MSGraph @graphParams
-        return
-    }
-
     try {
+        # Check if already connected
+        if (Test-AlreadyConnected -ServiceName $serviceName) {
+            return
+        }
+
+        # PowerShell 7+ - redirect to Microsoft Graph
+        if ($versionInfo.RequiresGraph) {
+            Write-Warning "AzureAD module is not supported in PowerShell 7+."
+            Write-Host "`tRedirecting to Microsoft Graph..." -ForegroundColor Cyan
+            # Filter out parameters that Connect-MSGraph doesn't accept
+            $graphParams = @{}
+            foreach ($key in $PSBoundParameters.Keys) {
+                if ($key -in @('AuthMethod', 'TenantId')) {
+                    $graphParams[$key] = $PSBoundParameters[$key]
+                }
+            }
+            if ($PSBoundParameters.ContainsKey('Credential')) {
+                Write-Warning "Credential parameter is not supported by Microsoft Graph. Interactive auth will be used."
+            }
+            Connect-MSGraph @graphParams
+            return
+        }
         # Check if module is available
         if (-not (Test-ModuleAvailable -ModuleName $moduleName)) {
             return
