@@ -53,7 +53,14 @@ function Connect-MSAzureAD {
     if ($versionInfo.RequiresGraph) {
         Write-Warning "AzureAD module is not supported in PowerShell 7+."
         Write-Host "`tRedirecting to Microsoft Graph..." -ForegroundColor Cyan
-        Connect-MSGraph @PSBoundParameters
+        # Filter out parameters that Connect-MSGraph doesn't accept
+        $graphParams = @{}
+        foreach ($key in $PSBoundParameters.Keys) {
+            if ($key -in @('AuthMethod', 'TenantId')) {
+                $graphParams[$key] = $PSBoundParameters[$key]
+            }
+        }
+        Connect-MSGraph @graphParams
         return
     }
 
