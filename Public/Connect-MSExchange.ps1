@@ -84,7 +84,9 @@ function Connect-MSExchange {
                     Write-Warning "No credential available. Use Add-MSAccount to configure credentials."
                     return
                 }
-                # Exchange Online V2 uses modern auth, pass UPN for proper auth flow
+                # Exchange Online Management uses modern auth and does not accept PSCredential.
+                # UPN is passed to pre-fill the interactive login prompt.
+                Write-Host "`tNote: Exchange Online requires interactive auth (UPN pre-filled)" -ForegroundColor Yellow
                 Connect-ExchangeOnline -UserPrincipalName $cred.UserName -ShowBanner:$false -ErrorAction Stop
             }
             default {
