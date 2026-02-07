@@ -18,6 +18,9 @@ function Get-MSConnectionStatus {
 
     .EXAMPLE
         Get-MSConnectionStatus -Detailed
+
+    .LINK
+        https://github.com/nikkelly/microsoftServicesProfile
     #>
     [CmdletBinding()]
     [OutputType([PSCustomObject])]

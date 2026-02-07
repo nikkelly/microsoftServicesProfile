@@ -21,6 +21,9 @@ function Connect-MSIntune {
 
     .EXAMPLE
         Connect-MSIntune -AdminConsent
+
+    .LINK
+        https://github.com/nikkelly/microsoftServicesProfile
     #>
     [CmdletBinding()]
     param(

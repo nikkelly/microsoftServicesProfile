@@ -15,6 +15,9 @@ function Show-MSCommands {
 
     .EXAMPLE
         Show-MSCommands -Quiet
+
+    .LINK
+        https://github.com/nikkelly/microsoftServicesProfile
     #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Plural is intentional - shows multiple commands')]
     [CmdletBinding()]

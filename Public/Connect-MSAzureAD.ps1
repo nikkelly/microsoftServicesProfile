@@ -27,6 +27,9 @@ function Connect-MSAzureAD {
 
     .EXAMPLE
         Connect-MSAzureAD -AuthMethod Credential -Credential $cred
+
+    .LINK
+        https://github.com/nikkelly/microsoftServicesProfile
     #>
     [CmdletBinding()]
     param(

@@ -28,6 +28,9 @@ function Connect-MSExchange {
 
     .EXAMPLE
         Connect-MSExchange -AuthMethod ServicePrincipal -Organization "contoso.onmicrosoft.com" -AppId "12345" -CertificateThumbprint "ABC123"
+
+    .LINK
+        https://github.com/nikkelly/microsoftServicesProfile
     #>
     [CmdletBinding()]
     param(

@@ -24,6 +24,9 @@ function Connect-MSSharePoint {
 
     .EXAMPLE
         Connect-MSSharePoint -Url "https://contoso-admin.sharepoint.com"
+
+    .LINK
+        https://github.com/nikkelly/microsoftServicesProfile
     #>
     [CmdletBinding()]
     param(

@@ -15,6 +15,9 @@ function Add-MSMFA {
 
     .EXAMPLE
         Add-MSMFA -Save
+
+    .LINK
+        https://github.com/nikkelly/microsoftServicesProfile
     #>
     [CmdletBinding(SupportsShouldProcess)]
     param(

@@ -28,6 +28,9 @@ function Add-MSAppRegistration {
     .EXAMPLE
         $secret = Read-Host -AsSecureString
         Add-MSAppRegistration -AppId "12345-abcd" -TenantId "contoso.onmicrosoft.com" -ClientSecret $secret -Save
+
+    .LINK
+        https://github.com/nikkelly/microsoftServicesProfile
     #>
     [CmdletBinding(SupportsShouldProcess)]
     param(

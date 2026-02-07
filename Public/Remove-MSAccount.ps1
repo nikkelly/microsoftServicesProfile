@@ -15,6 +15,9 @@ function Remove-MSAccount {
 
     .EXAMPLE
         Remove-MSAccount -KeepMFA
+
+    .LINK
+        https://github.com/nikkelly/microsoftServicesProfile
     #>
     [CmdletBinding(SupportsShouldProcess)]
     param(

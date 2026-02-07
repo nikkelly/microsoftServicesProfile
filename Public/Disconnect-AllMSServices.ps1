@@ -9,6 +9,9 @@ function Disconnect-AllMSServices {
 
     .EXAMPLE
         Disconnect-AllMSServices
+
+    .LINK
+        https://github.com/nikkelly/microsoftServicesProfile
     #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Plural is intentional - disconnects from multiple services')]
     [CmdletBinding()]
@@ -24,6 +27,9 @@ function Disconnect-AllMSServices {
     # Create a copy of the list to iterate over
     $servicesToDisconnect = $script:MSProfileState.ConnectedServices.Clone()
 
+    # Track whether Disconnect-ExchangeOnline has been called (shared by Exchange and S&C)
+    $exchangeOnlineDisconnected = $false
+
     foreach ($service in $servicesToDisconnect) {
         try {
             switch ($service) {
@@ -37,7 +43,10 @@ function Disconnect-AllMSServices {
                     }
                 }
                 'Exchange' {
-                    Disconnect-ExchangeOnline -Confirm:$false -ErrorAction SilentlyContinue
+                    if (-not $exchangeOnlineDisconnected) {
+                        Disconnect-ExchangeOnline -Confirm:$false -ErrorAction SilentlyContinue
+                        $exchangeOnlineDisconnected = $true
+                    }
                 }
                 'MSOnline' {
                     try {
@@ -56,7 +65,11 @@ function Disconnect-AllMSServices {
                     Disconnect-SPOService -ErrorAction SilentlyContinue
                 }
                 'Security_Compliance' {
-                    Disconnect-ExchangeOnline -Confirm:$false -ErrorAction SilentlyContinue
+                    # Exchange and S&C share Disconnect-ExchangeOnline; avoid calling it twice
+                    if (-not $exchangeOnlineDisconnected) {
+                        Disconnect-ExchangeOnline -Confirm:$false -ErrorAction SilentlyContinue
+                        $exchangeOnlineDisconnected = $true
+                    }
                 }
                 'Intune' {
                     # Legacy Intune module doesn't have a disconnect command

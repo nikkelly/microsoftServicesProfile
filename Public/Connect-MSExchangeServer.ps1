@@ -18,6 +18,9 @@ function Connect-MSExchangeServer {
 
     .EXAMPLE
         Connect-MSExchangeServer -ServerFQDN "exchange.contoso.com" -Credential $cred
+
+    .LINK
+        https://github.com/nikkelly/microsoftServicesProfile
     #>
     [CmdletBinding()]
     param(

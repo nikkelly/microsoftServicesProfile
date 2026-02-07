@@ -8,6 +8,9 @@ function Remove-MSMFA {
 
     .EXAMPLE
         Remove-MSMFA
+
+    .LINK
+        https://github.com/nikkelly/microsoftServicesProfile
     #>
     [CmdletBinding(SupportsShouldProcess)]
     param()

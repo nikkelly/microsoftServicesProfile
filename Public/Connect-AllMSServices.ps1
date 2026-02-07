@@ -18,6 +18,9 @@ function Connect-AllMSServices {
 
     .EXAMPLE
         Connect-AllMSServices -SkipServices 'SharePoint', 'Intune'
+
+    .LINK
+        https://github.com/nikkelly/microsoftServicesProfile
     #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Plural is intentional - connects to multiple services')]
     [CmdletBinding()]

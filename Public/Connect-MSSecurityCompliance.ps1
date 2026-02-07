@@ -27,6 +27,9 @@ function Connect-MSSecurityCompliance {
 
     .EXAMPLE
         Connect-MSSecurityCompliance -AuthMethod ServicePrincipal -AppId "12345" -CertificateThumbprint "ABC123" -Organization "contoso.onmicrosoft.com"
+
+    .LINK
+        https://github.com/nikkelly/microsoftServicesProfile
     #>
     [CmdletBinding()]
     param(

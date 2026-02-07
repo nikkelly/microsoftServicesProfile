@@ -18,6 +18,9 @@ function Add-MSAccount {
 
     .EXAMPLE
         Add-MSAccount -Save
+
+    .LINK
+        https://github.com/nikkelly/microsoftServicesProfile
     #>
     [CmdletBinding()]
     param(

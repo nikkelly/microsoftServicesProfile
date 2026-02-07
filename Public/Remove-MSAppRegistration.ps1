@@ -9,6 +9,9 @@ function Remove-MSAppRegistration {
 
     .EXAMPLE
         Remove-MSAppRegistration
+
+    .LINK
+        https://github.com/nikkelly/microsoftServicesProfile
     #>
     [CmdletBinding(SupportsShouldProcess)]
     param()
