@@ -43,7 +43,7 @@ function Disconnect-AllMSServices {
                     try {
                         [Microsoft.Online.Administration.Automation.ConnectMsolService]::ClearUserSessionState()
                     } catch {
-                        # Module may not be loaded
+                        Write-Verbose "MSOnline module not loaded or already disconnected: $_"
                     }
                 }
                 'AzureAD' {
