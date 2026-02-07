@@ -76,7 +76,7 @@ function Connect-MSExchange {
                     $org = Read-Host "`tEnter organization domain (e.g., contoso.onmicrosoft.com)"
                 }
 
-                Connect-ExchangeOnline -AppId $appIdValue -CertificateThumbprint $thumbprint -Organization $org -ShowBanner:$false
+                Connect-ExchangeOnline -AppId $appIdValue -CertificateThumbprint $thumbprint -Organization $org -ShowBanner:$false -ErrorAction Stop
             }
             'Credential' {
                 $cred = if ($Credential) { $Credential } else { $script:MSProfileState.Credential }
@@ -85,15 +85,15 @@ function Connect-MSExchange {
                     return
                 }
                 # Exchange Online V2 uses modern auth, pass UPN for proper auth flow
-                Connect-ExchangeOnline -UserPrincipalName $cred.UserName -ShowBanner:$false
+                Connect-ExchangeOnline -UserPrincipalName $cred.UserName -ShowBanner:$false -ErrorAction Stop
             }
             default {
                 # Interactive - Exchange Online V2 uses modern auth by default
                 $upn = $script:MSProfileState.MicrosoftUser
                 if ($upn) {
-                    Connect-ExchangeOnline -UserPrincipalName $upn -ShowBanner:$false
+                    Connect-ExchangeOnline -UserPrincipalName $upn -ShowBanner:$false -ErrorAction Stop
                 } else {
-                    Connect-ExchangeOnline -ShowBanner:$false
+                    Connect-ExchangeOnline -ShowBanner:$false -ErrorAction Stop
                 }
             }
         }

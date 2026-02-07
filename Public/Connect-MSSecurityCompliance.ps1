@@ -74,7 +74,7 @@ function Connect-MSSecurityCompliance {
                     $org = Read-Host "`tEnter organization domain (e.g., contoso.onmicrosoft.com)"
                 }
 
-                Connect-IPPSSession -AppId $appIdValue -CertificateThumbprint $thumbprint -Organization $org
+                Connect-IPPSSession -AppId $appIdValue -CertificateThumbprint $thumbprint -Organization $org -ErrorAction Stop
             }
             'Credential' {
                 $cred = if ($Credential) { $Credential } else { $script:MSProfileState.Credential }
@@ -83,17 +83,17 @@ function Connect-MSSecurityCompliance {
                     return
                 }
                 # Note: Fixed bug from original - was passing $credential instead of $credential.UserName
-                Connect-IPPSSession -UserPrincipalName $cred.UserName
+                Connect-IPPSSession -UserPrincipalName $cred.UserName -ErrorAction Stop
             }
             default {
                 # Interactive
                 if ($script:MSProfileState.MFAEnabled -and $script:MSProfileState.Credential) {
-                    Connect-IPPSSession -UserPrincipalName $script:MSProfileState.Credential.UserName
+                    Connect-IPPSSession -UserPrincipalName $script:MSProfileState.Credential.UserName -ErrorAction Stop
                 } elseif ($script:MSProfileState.MicrosoftUser) {
-                    Connect-IPPSSession -UserPrincipalName $script:MSProfileState.MicrosoftUser
+                    Connect-IPPSSession -UserPrincipalName $script:MSProfileState.MicrosoftUser -ErrorAction Stop
                 } else {
                     Write-Host "`tYou might see an interactive login prompt" -ForegroundColor Yellow
-                    Connect-IPPSSession
+                    Connect-IPPSSession -ErrorAction Stop
                 }
             }
         }

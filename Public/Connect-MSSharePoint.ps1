@@ -87,7 +87,7 @@ function Connect-MSSharePoint {
                 Write-Warning "Consider using PnP.PowerShell module for app-only authentication."
                 # Fall through to interactive
                 Write-Host "`tYou might see an interactive login prompt" -ForegroundColor Yellow
-                Connect-SPOService -Url $adminUrl
+                Connect-SPOService -Url $adminUrl -ErrorAction Stop
             }
             'Credential' {
                 $cred = if ($Credential) { $Credential } else { $script:MSProfileState.Credential }
@@ -95,18 +95,18 @@ function Connect-MSSharePoint {
                     Write-Warning "No credential available. Use Add-MSAccount to configure credentials."
                     return
                 }
-                Connect-SPOService -Url $adminUrl -Credential $cred
+                Connect-SPOService -Url $adminUrl -Credential $cred -ErrorAction Stop
             }
             default {
                 # Interactive
                 if ($script:MSProfileState.MFAEnabled) {
                     Write-Host "`tYou might see an interactive login prompt" -ForegroundColor Yellow
-                    Connect-SPOService -Url $adminUrl
+                    Connect-SPOService -Url $adminUrl -ErrorAction Stop
                 } elseif ($script:MSProfileState.Credential) {
-                    Connect-SPOService -Url $adminUrl -Credential $script:MSProfileState.Credential
+                    Connect-SPOService -Url $adminUrl -Credential $script:MSProfileState.Credential -ErrorAction Stop
                 } else {
                     Write-Host "`tYou might see an interactive login prompt" -ForegroundColor Yellow
-                    Connect-SPOService -Url $adminUrl
+                    Connect-SPOService -Url $adminUrl -ErrorAction Stop
                 }
             }
         }

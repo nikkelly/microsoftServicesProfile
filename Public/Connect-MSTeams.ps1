@@ -72,7 +72,7 @@ function Connect-MSTeams {
                     return
                 }
 
-                Connect-MicrosoftTeams -TenantId $tenantIdValue -ApplicationId $appIdValue -CertificateThumbprint $thumbprint
+                Connect-MicrosoftTeams -TenantId $tenantIdValue -ApplicationId $appIdValue -CertificateThumbprint $thumbprint -ErrorAction Stop
             }
             'Credential' {
                 $cred = if ($Credential) { $Credential } else { $script:MSProfileState.Credential }
@@ -80,18 +80,18 @@ function Connect-MSTeams {
                     Write-Warning "No credential available. Use Add-MSAccount to configure credentials."
                     return
                 }
-                Connect-MicrosoftTeams -Credential $cred
+                Connect-MicrosoftTeams -Credential $cred -ErrorAction Stop
             }
             default {
                 # Interactive
                 if ($script:MSProfileState.MFAEnabled) {
                     Write-Host "`tYou might see an interactive login prompt" -ForegroundColor Yellow
-                    Connect-MicrosoftTeams
+                    Connect-MicrosoftTeams -ErrorAction Stop
                 } elseif ($script:MSProfileState.Credential) {
-                    Connect-MicrosoftTeams -Credential $script:MSProfileState.Credential
+                    Connect-MicrosoftTeams -Credential $script:MSProfileState.Credential -ErrorAction Stop
                 } else {
                     Write-Host "`tYou might see an interactive login prompt" -ForegroundColor Yellow
-                    Connect-MicrosoftTeams
+                    Connect-MicrosoftTeams -ErrorAction Stop
                 }
             }
         }

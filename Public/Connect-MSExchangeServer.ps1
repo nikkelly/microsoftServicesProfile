@@ -56,10 +56,10 @@ function Connect-MSExchangeServer {
 
         # Create PSSession
         $connectionUri = "http://$ServerFQDN/PowerShell/"
-        $session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri $connectionUri -Authentication Kerberos -Credential $cred
+        $session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri $connectionUri -Authentication Kerberos -Credential $cred -ErrorAction Stop
 
         # Import the session
-        Import-PSSession $session -DisableNameChecking -AllowClobber | Out-Null
+        Import-PSSession $session -DisableNameChecking -AllowClobber -ErrorAction Stop | Out-Null
 
         # Store session for later disconnect
         $script:MSProfileState.ExchangeServerSession = $session

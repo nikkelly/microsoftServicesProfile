@@ -72,7 +72,7 @@ function Connect-MSAzureAD {
 
                 $tenantIdValue = if ($TenantId) { $TenantId } else { $script:MSProfileState.AppRegistration.TenantId }
                 if ($tenantIdValue) {
-                    AzureAD\Connect-AzureAD -TenantId $tenantIdValue
+                    AzureAD\Connect-AzureAD -TenantId $tenantIdValue -ErrorAction Stop
                 } else {
                     Write-Warning "TenantId is required for service principal authentication"
                     return
@@ -84,23 +84,23 @@ function Connect-MSAzureAD {
                     Write-Warning "No credential available. Use Add-MSAccount to configure credentials."
                     return
                 }
-                AzureAD\Connect-AzureAD -Credential $cred
+                AzureAD\Connect-AzureAD -Credential $cred -ErrorAction Stop
             }
             default {
                 # Interactive
                 if ($script:MSProfileState.MFAEnabled) {
                     $account = if ($AccountId) { $AccountId } else { $script:MSProfileState.MicrosoftUser }
                     if ($account) {
-                        AzureAD\Connect-AzureAD -AccountId $account
+                        AzureAD\Connect-AzureAD -AccountId $account -ErrorAction Stop
                     } else {
                         Write-Host "`tYou might see an interactive login prompt" -ForegroundColor Yellow
-                        AzureAD\Connect-AzureAD
+                        AzureAD\Connect-AzureAD -ErrorAction Stop
                     }
                 } elseif ($script:MSProfileState.Credential) {
-                    AzureAD\Connect-AzureAD -Credential $script:MSProfileState.Credential
+                    AzureAD\Connect-AzureAD -Credential $script:MSProfileState.Credential -ErrorAction Stop
                 } else {
                     Write-Host "`tYou might see an interactive login prompt" -ForegroundColor Yellow
-                    AzureAD\Connect-AzureAD
+                    AzureAD\Connect-AzureAD -ErrorAction Stop
                 }
             }
         }

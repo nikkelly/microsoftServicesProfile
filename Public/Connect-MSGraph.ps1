@@ -82,11 +82,11 @@ function Connect-MSGraph {
 
                 if ($thumbprint) {
                     # Certificate-based authentication
-                    Connect-MgGraph -ClientId $appIdValue -TenantId $tenantIdValue -CertificateThumbprint $thumbprint -NoWelcome
+                    Connect-MgGraph -ClientId $appIdValue -TenantId $tenantIdValue -CertificateThumbprint $thumbprint -NoWelcome -ErrorAction Stop
                 } elseif ($secret) {
                     # Client secret authentication
                     $credential = New-Object System.Management.Automation.PSCredential($appIdValue, $secret)
-                    Connect-MgGraph -ClientSecretCredential $credential -TenantId $tenantIdValue -NoWelcome
+                    Connect-MgGraph -ClientSecretCredential $credential -TenantId $tenantIdValue -NoWelcome -ErrorAction Stop
                 } else {
                     Write-Warning "Service principal authentication requires either CertificateThumbprint or ClientSecret"
                     return
@@ -96,12 +96,12 @@ function Connect-MSGraph {
                 # Microsoft Graph doesn't support direct credential auth like legacy modules
                 # Use delegated permissions with interactive auth
                 Write-Host "`tNote: Microsoft Graph uses interactive auth for delegated permissions" -ForegroundColor Yellow
-                Connect-MgGraph -Scopes $Scopes -NoWelcome
+                Connect-MgGraph -Scopes $Scopes -NoWelcome -ErrorAction Stop
             }
             default {
                 # Interactive authentication with delegated permissions
                 Write-Host "`tYou might see an interactive login prompt" -ForegroundColor Yellow
-                Connect-MgGraph -Scopes $Scopes -NoWelcome
+                Connect-MgGraph -Scopes $Scopes -NoWelcome -ErrorAction Stop
             }
         }
 
