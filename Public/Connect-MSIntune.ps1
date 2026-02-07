@@ -67,8 +67,18 @@ function Connect-MSIntune {
                 'DeviceManagementServiceConfig.Read.All'
             )
 
+            # Track whether Graph was already connected before this call
+            $graphWasConnected = $script:MSProfileState.ConnectedServices -contains 'Graph'
             Connect-MSGraph -Scopes $intuneScopes -AuthMethod $AuthMethod
-            Update-ConnectedServices -ServiceName $serviceName
+
+            # Only mark Intune as connected if Graph connection succeeded
+            if ($script:MSProfileState.ConnectedServices -contains 'Graph') {
+                # Remove the Graph entry added by Connect-MSGraph to avoid double-counting
+                if (-not $graphWasConnected) {
+                    $script:MSProfileState.ConnectedServices.Remove('Graph')
+                }
+                Update-ConnectedServices -ServiceName $serviceName
+            }
             return
         }
 
