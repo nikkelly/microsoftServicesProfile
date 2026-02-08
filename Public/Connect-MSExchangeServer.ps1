@@ -20,7 +20,7 @@ function Connect-MSExchangeServer {
         Connect-MSExchangeServer -ServerFQDN "exchange.contoso.com" -Credential $cred
 
     .LINK
-        https://github.com/nikkelly/microsoftServicesProfile
+        https://github.com/nikkelly/M365Connect
     #>
     [CmdletBinding()]
     param(

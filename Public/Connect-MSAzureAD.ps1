@@ -29,7 +29,7 @@ function Connect-MSAzureAD {
         Connect-MSAzureAD -AuthMethod Credential -Credential $cred
 
     .LINK
-        https://github.com/nikkelly/microsoftServicesProfile
+        https://github.com/nikkelly/M365Connect
     #>
     [CmdletBinding()]
     param(

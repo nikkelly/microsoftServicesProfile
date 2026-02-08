@@ -11,7 +11,7 @@ function Remove-MSAppRegistration {
         Remove-MSAppRegistration
 
     .LINK
-        https://github.com/nikkelly/microsoftServicesProfile
+        https://github.com/nikkelly/M365Connect
     #>
     [CmdletBinding(SupportsShouldProcess)]
     param()

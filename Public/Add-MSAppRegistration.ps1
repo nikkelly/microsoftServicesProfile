@@ -30,7 +30,7 @@ function Add-MSAppRegistration {
         Add-MSAppRegistration -AppId "12345-abcd" -TenantId "contoso.onmicrosoft.com" -ClientSecret $secret -Save
 
     .LINK
-        https://github.com/nikkelly/microsoftServicesProfile
+        https://github.com/nikkelly/M365Connect
     #>
     [CmdletBinding(SupportsShouldProcess)]
     param(

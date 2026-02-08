@@ -1,4 +1,4 @@
-# Microsoft Services PowerShell Profile
+# M365Connect
 
 Connect to Microsoft 365 services with a single command.
 
@@ -8,17 +8,17 @@ Supports PowerShell 5.1 (Desktop) and PowerShell 7+ (Core).
 
 ```powershell
 # Clone the repo
-git clone https://github.com/nikkelly/microsoftServicesProfile.git
+git clone https://github.com/nikkelly/M365Connect.git
 
 # Import for current session
-Import-Module .\microsoftServicesProfile\microsoftServicesProfile.psd1
+Import-Module .\M365Connect\M365Connect.psd1
 
 # Or install to your modules directory for permanent use
-Copy-Item -Recurse .\microsoftServicesProfile $env:PSModulePath.Split(';')[0]
-Import-Module microsoftServicesProfile
+Copy-Item -Recurse .\M365Connect $env:PSModulePath.Split(';')[0]
+Import-Module M365Connect
 ```
 
-To auto-load on every session, add `Import-Module microsoftServicesProfile` to your [PowerShell profile](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_profiles).
+To auto-load on every session, add `Import-Module M365Connect` to your [PowerShell profile](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_profiles).
 
 ## First Time Setup
 

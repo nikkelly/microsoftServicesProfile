@@ -20,7 +20,7 @@ function Connect-AllMSServices {
         Connect-AllMSServices -SkipServices 'SharePoint', 'Intune'
 
     .LINK
-        https://github.com/nikkelly/microsoftServicesProfile
+        https://github.com/nikkelly/M365Connect
     #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Plural is intentional - connects to multiple services')]
     [CmdletBinding()]

@@ -20,7 +20,7 @@ function Add-MSAccount {
         Add-MSAccount -Save
 
     .LINK
-        https://github.com/nikkelly/microsoftServicesProfile
+        https://github.com/nikkelly/M365Connect
     #>
     [CmdletBinding()]
     param(

@@ -2,18 +2,18 @@
 
 <#
 .SYNOPSIS
-    Pester tests for the microsoftServicesProfile module.
+    Pester tests for the M365Connect module.
 
 .DESCRIPTION
     Tests module import, function availability, aliases, and basic functionality.
 
 .NOTES
-    Run with: Invoke-Pester -Path .\Tests\microsoftServicesProfile.Tests.ps1
+    Run with: Invoke-Pester -Path .\Tests\M365Connect.Tests.ps1
 #>
 
 BeforeAll {
     # Import the module
-    $modulePath = Split-Path -Parent $PSScriptRoot
+    $modulePath = Join-Path (Split-Path -Parent $PSScriptRoot) 'M365Connect.psd1'
     Import-Module $modulePath -Force -ErrorAction Stop
 
     # Helper to create test credentials without triggering PSScriptAnalyzer plaintext warnings
@@ -31,7 +31,7 @@ Describe 'Module Import' {
     }
 
     It 'Should have the correct module version' {
-        $module = Get-Module -Name microsoftServicesProfile | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
+        $module = Get-Module -Name M365Connect | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
         $module.Version | Should -Be '3.0.0'
     }
 }
@@ -80,7 +80,7 @@ Describe 'Exported Functions' {
         'Get-MSConnectionStatus',
         'Show-MSCommands'
     ) {
-        Get-Command -Name $_ -Module microsoftServicesProfile -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+        Get-Command -Name $_ -Module M365Connect -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
     }
 }
 
@@ -138,7 +138,7 @@ Describe 'Show-MSCommands' {
 Describe 'Module State' {
     It 'Should have initialized MSProfileState' {
         # Access via module scope - select the v3 module specifically
-        $mod = Get-Module -Name microsoftServicesProfile | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
+        $mod = Get-Module -Name M365Connect | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
         $state = & $mod { $script:MSProfileState }
         $state | Should -Not -BeNullOrEmpty
         # ConnectedServices is initialized as empty ArrayList, so check it exists (not null)
@@ -147,7 +147,7 @@ Describe 'Module State' {
     }
 
     It 'Should have correct PS version info' {
-        $mod = Get-Module -Name microsoftServicesProfile | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
+        $mod = Get-Module -Name M365Connect | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
         $state = & $mod { $script:MSProfileState }
         $state.PSVersionInfo.Major | Should -Be $PSVersionTable.PSVersion.Major
         $state.PSVersionInfo.IsCore | Should -Be ($PSVersionTable.PSEdition -eq 'Core')
@@ -156,7 +156,7 @@ Describe 'Module State' {
 
 Describe 'PowerShell 7 Compatibility' {
     BeforeAll {
-        $script:testMod = Get-Module -Name microsoftServicesProfile | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
+        $script:testMod = Get-Module -Name M365Connect | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
     }
 
     It 'Should correctly identify PowerShell version capability' {
@@ -173,7 +173,7 @@ Describe 'PowerShell 7 Compatibility' {
 
 Describe 'Add-MSMFA and Remove-MSMFA' {
     BeforeAll {
-        $script:testMod = Get-Module -Name microsoftServicesProfile | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
+        $script:testMod = Get-Module -Name M365Connect | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
     }
 
     AfterEach {
@@ -221,7 +221,7 @@ Describe 'Parameter Validation' {
 
 Describe 'Connect-MSTeams (mocked)' {
     BeforeAll {
-        $script:testMod = Get-Module -Name microsoftServicesProfile | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
+        $script:testMod = Get-Module -Name M365Connect | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
     }
 
     BeforeEach {
@@ -231,14 +231,14 @@ Describe 'Connect-MSTeams (mocked)' {
     It 'Should call Connect-MicrosoftTeams with credential when AuthMethod is Credential' {
         $testCred = Get-TestCredential
 
-        InModuleScope microsoftServicesProfile -Parameters @{ testCred = $testCred } {
-            Mock Connect-MicrosoftTeams { } -ModuleName microsoftServicesProfile
-            Mock Test-ModuleAvailable { $true } -ModuleName microsoftServicesProfile
+        InModuleScope M365Connect -Parameters @{ testCred = $testCred } {
+            Mock Connect-MicrosoftTeams { } -ModuleName M365Connect
+            Mock Test-ModuleAvailable { $true } -ModuleName M365Connect
 
             $script:MSProfileState.Credential = $testCred
             Connect-MSTeams -AuthMethod Credential -Credential $testCred
 
-            Should -Invoke Connect-MicrosoftTeams -Times 1 -ModuleName microsoftServicesProfile -ParameterFilter {
+            Should -Invoke Connect-MicrosoftTeams -Times 1 -ModuleName M365Connect -ParameterFilter {
                 $Credential -eq $testCred
             }
         }
@@ -249,19 +249,19 @@ Describe 'Connect-MSTeams (mocked)' {
             [void]$script:MSProfileState.ConnectedServices.Add('Teams')
         }
 
-        InModuleScope microsoftServicesProfile {
-            Mock Connect-MicrosoftTeams { } -ModuleName microsoftServicesProfile
+        InModuleScope M365Connect {
+            Mock Connect-MicrosoftTeams { } -ModuleName M365Connect
 
             Connect-MSTeams
 
-            Should -Invoke Connect-MicrosoftTeams -Times 0 -ModuleName microsoftServicesProfile
+            Should -Invoke Connect-MicrosoftTeams -Times 0 -ModuleName M365Connect
         }
     }
 
     It 'Should add Teams to connected services on success' {
-        InModuleScope microsoftServicesProfile {
-            Mock Connect-MicrosoftTeams { } -ModuleName microsoftServicesProfile
-            Mock Test-ModuleAvailable { $true } -ModuleName microsoftServicesProfile
+        InModuleScope M365Connect {
+            Mock Connect-MicrosoftTeams { } -ModuleName M365Connect
+            Mock Test-ModuleAvailable { $true } -ModuleName M365Connect
 
             $script:MSProfileState.MFAEnabled = $true
             Connect-MSTeams -AuthMethod Interactive
@@ -273,7 +273,7 @@ Describe 'Connect-MSTeams (mocked)' {
 
 Describe 'Connect-MSGraph (mocked)' {
     BeforeAll {
-        $script:testMod = Get-Module -Name microsoftServicesProfile | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
+        $script:testMod = Get-Module -Name M365Connect | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
     }
 
     BeforeEach {
@@ -281,36 +281,36 @@ Describe 'Connect-MSGraph (mocked)' {
     }
 
     It 'Should call Connect-MgGraph with scopes for interactive auth' {
-        InModuleScope microsoftServicesProfile {
-            Mock Connect-MgGraph { } -ModuleName microsoftServicesProfile
-            Mock Get-MgContext { $null } -ModuleName microsoftServicesProfile
-            Mock Test-ModuleAvailable { $true } -ModuleName microsoftServicesProfile
+        InModuleScope M365Connect {
+            Mock Connect-MgGraph { } -ModuleName M365Connect
+            Mock Get-MgContext { $null } -ModuleName M365Connect
+            Mock Test-ModuleAvailable { $true } -ModuleName M365Connect
 
             Connect-MSGraph -AuthMethod Interactive
 
-            Should -Invoke Connect-MgGraph -Times 1 -ModuleName microsoftServicesProfile
+            Should -Invoke Connect-MgGraph -Times 1 -ModuleName M365Connect
         }
     }
 
     It 'Should call Connect-MgGraph with custom scopes' {
-        InModuleScope microsoftServicesProfile {
-            Mock Connect-MgGraph { } -ModuleName microsoftServicesProfile
-            Mock Get-MgContext { $null } -ModuleName microsoftServicesProfile
-            Mock Test-ModuleAvailable { $true } -ModuleName microsoftServicesProfile
+        InModuleScope M365Connect {
+            Mock Connect-MgGraph { } -ModuleName M365Connect
+            Mock Get-MgContext { $null } -ModuleName M365Connect
+            Mock Test-ModuleAvailable { $true } -ModuleName M365Connect
 
             Connect-MSGraph -Scopes 'Mail.Read'
 
-            Should -Invoke Connect-MgGraph -Times 1 -ModuleName microsoftServicesProfile -ParameterFilter {
+            Should -Invoke Connect-MgGraph -Times 1 -ModuleName M365Connect -ParameterFilter {
                 $Scopes -contains 'Mail.Read'
             }
         }
     }
 
     It 'Should call Connect-MgGraph with certificate for service principal' {
-        InModuleScope microsoftServicesProfile {
-            Mock Connect-MgGraph { } -ModuleName microsoftServicesProfile
-            Mock Get-MgContext { $null } -ModuleName microsoftServicesProfile
-            Mock Test-ModuleAvailable { $true } -ModuleName microsoftServicesProfile
+        InModuleScope M365Connect {
+            Mock Connect-MgGraph { } -ModuleName M365Connect
+            Mock Get-MgContext { $null } -ModuleName M365Connect
+            Mock Test-ModuleAvailable { $true } -ModuleName M365Connect
 
             $script:MSProfileState.AppRegistration = @{
                 AppId                 = 'test-app-id'
@@ -321,17 +321,17 @@ Describe 'Connect-MSGraph (mocked)' {
 
             Connect-MSGraph -AuthMethod ServicePrincipal
 
-            Should -Invoke Connect-MgGraph -Times 1 -ModuleName microsoftServicesProfile -ParameterFilter {
+            Should -Invoke Connect-MgGraph -Times 1 -ModuleName M365Connect -ParameterFilter {
                 $ClientId -eq 'test-app-id' -and $TenantId -eq 'test-tenant-id' -and $CertificateThumbprint -eq 'AABB1122'
             }
         }
     }
 
     It 'Should add Graph to connected services on success' {
-        InModuleScope microsoftServicesProfile {
-            Mock Connect-MgGraph { } -ModuleName microsoftServicesProfile
-            Mock Get-MgContext { $null } -ModuleName microsoftServicesProfile
-            Mock Test-ModuleAvailable { $true } -ModuleName microsoftServicesProfile
+        InModuleScope M365Connect {
+            Mock Connect-MgGraph { } -ModuleName M365Connect
+            Mock Get-MgContext { $null } -ModuleName M365Connect
+            Mock Test-ModuleAvailable { $true } -ModuleName M365Connect
 
             Connect-MSGraph -AuthMethod Interactive
 
@@ -342,7 +342,7 @@ Describe 'Connect-MSGraph (mocked)' {
 
 Describe 'Connect-MSExchange (mocked)' {
     BeforeAll {
-        $script:testMod = Get-Module -Name microsoftServicesProfile | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
+        $script:testMod = Get-Module -Name M365Connect | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
     }
 
     BeforeEach {
@@ -352,34 +352,34 @@ Describe 'Connect-MSExchange (mocked)' {
     It 'Should call Connect-ExchangeOnline with UPN for credential mode' {
         $testCred = Get-TestCredential -User 'admin@contoso.com'
 
-        InModuleScope microsoftServicesProfile -Parameters @{ testCred = $testCred } {
-            Mock Connect-ExchangeOnline { } -ModuleName microsoftServicesProfile
-            Mock Test-ModuleAvailable { $true } -ModuleName microsoftServicesProfile
+        InModuleScope M365Connect -Parameters @{ testCred = $testCred } {
+            Mock Connect-ExchangeOnline { } -ModuleName M365Connect
+            Mock Test-ModuleAvailable { $true } -ModuleName M365Connect
 
             Connect-MSExchange -AuthMethod Credential -Credential $testCred
 
-            Should -Invoke Connect-ExchangeOnline -Times 1 -ModuleName microsoftServicesProfile -ParameterFilter {
+            Should -Invoke Connect-ExchangeOnline -Times 1 -ModuleName M365Connect -ParameterFilter {
                 $UserPrincipalName -eq 'admin@contoso.com'
             }
         }
     }
 
     It 'Should warn and not call Connect-ExchangeOnline when no credential available' {
-        InModuleScope microsoftServicesProfile {
-            Mock Connect-ExchangeOnline { } -ModuleName microsoftServicesProfile
-            Mock Test-ModuleAvailable { $true } -ModuleName microsoftServicesProfile
+        InModuleScope M365Connect {
+            Mock Connect-ExchangeOnline { } -ModuleName M365Connect
+            Mock Test-ModuleAvailable { $true } -ModuleName M365Connect
 
             $script:MSProfileState.Credential = $null
             Connect-MSExchange -AuthMethod Credential 3>$null
 
-            Should -Invoke Connect-ExchangeOnline -Times 0 -ModuleName microsoftServicesProfile
+            Should -Invoke Connect-ExchangeOnline -Times 0 -ModuleName M365Connect
         }
     }
 }
 
 Describe 'Connect-MSAzureAD PS7+ redirect (mocked)' {
     BeforeAll {
-        $script:testMod = Get-Module -Name microsoftServicesProfile | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
+        $script:testMod = Get-Module -Name M365Connect | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
     }
 
     BeforeEach {
@@ -393,21 +393,21 @@ Describe 'Connect-MSAzureAD PS7+ redirect (mocked)' {
             return
         }
 
-        InModuleScope microsoftServicesProfile {
-            Mock Connect-MgGraph { } -ModuleName microsoftServicesProfile
-            Mock Get-MgContext { $null } -ModuleName microsoftServicesProfile
-            Mock Test-ModuleAvailable { $true } -ModuleName microsoftServicesProfile
+        InModuleScope M365Connect {
+            Mock Connect-MgGraph { } -ModuleName M365Connect
+            Mock Get-MgContext { $null } -ModuleName M365Connect
+            Mock Test-ModuleAvailable { $true } -ModuleName M365Connect
 
             Connect-MSAzureAD -AuthMethod Interactive 3>$null
 
-            Should -Invoke Connect-MgGraph -Times 1 -ModuleName microsoftServicesProfile
+            Should -Invoke Connect-MgGraph -Times 1 -ModuleName M365Connect
         }
     }
 }
 
 Describe 'Connect-AllMSServices (mocked)' {
     BeforeAll {
-        $script:testMod = Get-Module -Name microsoftServicesProfile | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
+        $script:testMod = Get-Module -Name M365Connect | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
     }
 
     BeforeEach {
@@ -415,26 +415,26 @@ Describe 'Connect-AllMSServices (mocked)' {
     }
 
     It 'Should skip services in SkipServices list' {
-        InModuleScope microsoftServicesProfile {
-            Mock Connect-MSGraph { } -ModuleName microsoftServicesProfile
-            Mock Connect-MSExchange { } -ModuleName microsoftServicesProfile
-            Mock Connect-MSTeams { } -ModuleName microsoftServicesProfile
-            Mock Connect-MSSharePoint { } -ModuleName microsoftServicesProfile
-            Mock Connect-MSSecurityCompliance { } -ModuleName microsoftServicesProfile
-            Mock Connect-MSIntune { } -ModuleName microsoftServicesProfile
-            Mock Connect-MSAzureAD { } -ModuleName microsoftServicesProfile
+        InModuleScope M365Connect {
+            Mock Connect-MSGraph { } -ModuleName M365Connect
+            Mock Connect-MSExchange { } -ModuleName M365Connect
+            Mock Connect-MSTeams { } -ModuleName M365Connect
+            Mock Connect-MSSharePoint { } -ModuleName M365Connect
+            Mock Connect-MSSecurityCompliance { } -ModuleName M365Connect
+            Mock Connect-MSIntune { } -ModuleName M365Connect
+            Mock Connect-MSAzureAD { } -ModuleName M365Connect
 
             Connect-AllMSServices -SkipServices 'Exchange', 'SharePoint'
 
-            Should -Invoke Connect-MSExchange -Times 0 -ModuleName microsoftServicesProfile
-            Should -Invoke Connect-MSSharePoint -Times 0 -ModuleName microsoftServicesProfile
+            Should -Invoke Connect-MSExchange -Times 0 -ModuleName M365Connect
+            Should -Invoke Connect-MSSharePoint -Times 0 -ModuleName M365Connect
         }
     }
 }
 
 Describe 'Disconnect-AllMSServices (mocked)' {
     BeforeAll {
-        $script:testMod = Get-Module -Name microsoftServicesProfile | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
+        $script:testMod = Get-Module -Name M365Connect | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
     }
 
     It 'Should not throw when no services connected' {
@@ -449,10 +449,10 @@ Describe 'Disconnect-AllMSServices (mocked)' {
             [void]$script:MSProfileState.ConnectedServices.Add('Exchange')
         }
 
-        InModuleScope microsoftServicesProfile {
-            Mock Disconnect-MicrosoftTeams { } -ModuleName microsoftServicesProfile
-            Mock Disconnect-ExchangeOnline { } -ModuleName microsoftServicesProfile
-            Mock Reset-MSPrompt { } -ModuleName microsoftServicesProfile
+        InModuleScope M365Connect {
+            Mock Disconnect-MicrosoftTeams { } -ModuleName M365Connect
+            Mock Disconnect-ExchangeOnline { } -ModuleName M365Connect
+            Mock Reset-MSPrompt { } -ModuleName M365Connect
 
             Disconnect-AllMSServices
 
@@ -463,13 +463,13 @@ Describe 'Disconnect-AllMSServices (mocked)' {
 
 Describe 'Test-AlreadyConnected' {
     BeforeAll {
-        $script:testMod = Get-Module -Name microsoftServicesProfile | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
+        $script:testMod = Get-Module -Name M365Connect | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
     }
 
     It 'Should return $false when no services are connected' {
         & $script:testMod { $script:MSProfileState.ConnectedServices.Clear() }
 
-        $result = InModuleScope microsoftServicesProfile {
+        $result = InModuleScope M365Connect {
             Test-AlreadyConnected -ServiceName 'Teams'
         }
         $result | Should -BeFalse
@@ -480,7 +480,7 @@ Describe 'Test-AlreadyConnected' {
             [void]$script:MSProfileState.ConnectedServices.Add('Teams')
         }
 
-        $result = InModuleScope microsoftServicesProfile {
+        $result = InModuleScope M365Connect {
             Test-AlreadyConnected -ServiceName 'Teams'
         }
         $result | Should -BeTrue
@@ -492,7 +492,7 @@ Describe 'Test-AlreadyConnected' {
 
 Describe 'Export-MSAppRegistration' {
     It 'Should exist as a private function' {
-        $mod = Get-Module -Name microsoftServicesProfile | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
+        $mod = Get-Module -Name M365Connect | Where-Object { $_.Version -eq '3.0.0' } | Select-Object -First 1
         $result = & $mod { Get-Command Export-MSAppRegistration -ErrorAction SilentlyContinue }
         $result | Should -Not -BeNullOrEmpty
     }
@@ -527,5 +527,5 @@ Describe 'ShouldProcess support' {
 
 AfterAll {
     # Clean up - remove the module
-    Remove-Module microsoftServicesProfile -Force -ErrorAction SilentlyContinue
+    Remove-Module M365Connect -Force -ErrorAction SilentlyContinue
 }

@@ -17,7 +17,7 @@ function Remove-MSAccount {
         Remove-MSAccount -KeepMFA
 
     .LINK
-        https://github.com/nikkelly/microsoftServicesProfile
+        https://github.com/nikkelly/M365Connect
     #>
     [CmdletBinding(SupportsShouldProcess)]
     param(

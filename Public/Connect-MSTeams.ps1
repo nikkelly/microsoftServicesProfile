@@ -30,7 +30,7 @@ function Connect-MSTeams {
         Connect-MSTeams -AuthMethod ServicePrincipal -TenantId "contoso.onmicrosoft.com" -AppId "12345" -CertificateThumbprint "ABC123"
 
     .LINK
-        https://github.com/nikkelly/microsoftServicesProfile
+        https://github.com/nikkelly/M365Connect
     #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Teams is a proper noun (Microsoft Teams)')]
     [CmdletBinding()]

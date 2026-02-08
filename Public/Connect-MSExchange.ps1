@@ -30,7 +30,7 @@ function Connect-MSExchange {
         Connect-MSExchange -AuthMethod ServicePrincipal -Organization "contoso.onmicrosoft.com" -AppId "12345" -CertificateThumbprint "ABC123"
 
     .LINK
-        https://github.com/nikkelly/microsoftServicesProfile
+        https://github.com/nikkelly/M365Connect
     #>
     [CmdletBinding()]
     param(

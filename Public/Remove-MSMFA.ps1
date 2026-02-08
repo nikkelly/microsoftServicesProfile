@@ -10,7 +10,7 @@ function Remove-MSMFA {
         Remove-MSMFA
 
     .LINK
-        https://github.com/nikkelly/microsoftServicesProfile
+        https://github.com/nikkelly/M365Connect
     #>
     [CmdletBinding(SupportsShouldProcess)]
     param()

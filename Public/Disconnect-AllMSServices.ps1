@@ -11,7 +11,7 @@ function Disconnect-AllMSServices {
         Disconnect-AllMSServices
 
     .LINK
-        https://github.com/nikkelly/microsoftServicesProfile
+        https://github.com/nikkelly/M365Connect
     #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Plural is intentional - disconnects from multiple services')]
     [CmdletBinding()]

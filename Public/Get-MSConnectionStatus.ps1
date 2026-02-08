@@ -20,7 +20,7 @@ function Get-MSConnectionStatus {
         Get-MSConnectionStatus -Detailed
 
     .LINK
-        https://github.com/nikkelly/microsoftServicesProfile
+        https://github.com/nikkelly/M365Connect
     #>
     [CmdletBinding()]
     [OutputType([PSCustomObject])]

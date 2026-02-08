@@ -1,6 +1,6 @@
 @{
     # Script module or binary module file associated with this manifest.
-    RootModule = 'microsoftServicesProfile.psm1'
+    RootModule = 'M365Connect.psm1'
 
     # Version number of this module.
     ModuleVersion = '3.0.0'
@@ -80,10 +80,10 @@
             Tags = @('Microsoft365', 'Azure', 'Teams', 'Exchange', 'SharePoint', 'AzureAD', 'Graph', 'Intune', 'Office365')
 
             # A URL to the license for this module.
-            LicenseUri = 'https://github.com/nikkelly/microsoftServicesProfile/blob/main/LICENSE'
+            LicenseUri = 'https://github.com/nikkelly/M365Connect/blob/main/LICENSE'
 
             # A URL to the main website for this project.
-            ProjectUri = 'https://github.com/nikkelly/microsoftServicesProfile'
+            ProjectUri = 'https://github.com/nikkelly/M365Connect'
 
             # ReleaseNotes of this module
             ReleaseNotes = @'

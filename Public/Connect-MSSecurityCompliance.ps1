@@ -29,7 +29,7 @@ function Connect-MSSecurityCompliance {
         Connect-MSSecurityCompliance -AuthMethod ServicePrincipal -AppId "12345" -CertificateThumbprint "ABC123" -Organization "contoso.onmicrosoft.com"
 
     .LINK
-        https://github.com/nikkelly/microsoftServicesProfile
+        https://github.com/nikkelly/M365Connect
     #>
     [CmdletBinding()]
     param(

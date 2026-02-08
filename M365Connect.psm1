@@ -17,7 +17,7 @@
 .NOTES
     Version: 3.0.0
     Author: nikkelly
-    GitHub: https://github.com/nikkelly/microsoftServicesProfile
+    GitHub: https://github.com/nikkelly/M365Connect
 #>
 
 # Initialize module state

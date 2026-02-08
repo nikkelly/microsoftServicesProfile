@@ -17,7 +17,7 @@ function Add-MSMFA {
         Add-MSMFA -Save
 
     .LINK
-        https://github.com/nikkelly/microsoftServicesProfile
+        https://github.com/nikkelly/M365Connect
     #>
     [CmdletBinding(SupportsShouldProcess)]
     param(

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Microsoft Services PowerShell Profile - A PowerShell module that simplifies connections to Microsoft 365 services. Provides unified authentication, credential management, app registration (service principal) support, and connection tracking for multiple Microsoft cloud services.
+M365Connect - A PowerShell module that simplifies connections to Microsoft 365 services. Provides unified authentication, credential management, app registration (service principal) support, and connection tracking for multiple Microsoft cloud services.
 
 **Version 3.0** - Now a proper PowerShell module with PS 5.1 and PS 7+ support.
 
@@ -13,17 +13,17 @@ Microsoft Services PowerShell Profile - A PowerShell module that simplifies conn
 **Installation:**
 ```powershell
 # Import for current session
-Import-Module .\microsoftServicesProfile.psd1
+Import-Module .\M365Connect.psd1
 
 # Install to PowerShell modules directory
-Copy-Item -Recurse .\microsoftServicesProfile $env:PSModulePath.Split(';')[0]
-Import-Module microsoftServicesProfile
+Copy-Item -Recurse .\M365Connect $env:PSModulePath.Split(';')[0]
+Import-Module M365Connect
 ```
 
 **Testing:**
 ```powershell
 # Run Pester tests
-Invoke-Pester -Path .\Tests\microsoftServicesProfile.Tests.ps1
+Invoke-Pester -Path .\Tests\M365Connect.Tests.ps1
 
 # Run PSScriptAnalyzer (uses project settings file)
 Invoke-ScriptAnalyzer -Path . -Recurse -Settings .\PSScriptAnalyzerSettings.psd1
@@ -33,9 +33,9 @@ Invoke-ScriptAnalyzer -Path . -Recurse -Settings .\PSScriptAnalyzerSettings.psd1
 
 ### Module Structure
 ```
-microsoftServicesProfile/
-├── microsoftServicesProfile.psd1      # Module manifest
-├── microsoftServicesProfile.psm1      # Module loader
+M365Connect/
+├── M365Connect.psd1                   # Module manifest
+├── M365Connect.psm1                   # Module loader
 ├── PSScriptAnalyzerSettings.psd1      # Analyzer rule exclusions
 ├── Public/                            # Exported functions
 │   ├── Connect-MS*.ps1               # Service connection functions
@@ -54,7 +54,7 @@ microsoftServicesProfile/
 │   ├── Test-AlreadyConnected.ps1
 │   └── Initialize-ModuleState.ps1
 └── Tests/
-    └── microsoftServicesProfile.Tests.ps1
+    └── M365Connect.Tests.ps1
 ```
 
 ### Module State

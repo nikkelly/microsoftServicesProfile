@@ -1,5 +1,6 @@
-# Claude Code local settings
+# Claude Code
 .claude/
+CLAUDE.md
 
 # PowerShell artifacts
 *.log

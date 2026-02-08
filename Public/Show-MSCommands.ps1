@@ -17,7 +17,7 @@ function Show-MSCommands {
         Show-MSCommands -Quiet
 
     .LINK
-        https://github.com/nikkelly/microsoftServicesProfile
+        https://github.com/nikkelly/M365Connect
     #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Plural is intentional - shows multiple commands')]
     [CmdletBinding()]
@@ -25,7 +25,7 @@ function Show-MSCommands {
         [switch]$Quiet
     )
 
-    $mod = Get-Module microsoftServicesProfile
+    $mod = Get-Module M365Connect
     $version = if ($mod) { $mod.Version.ToString() } else { '3.0.0' }
     $versionInfo = $script:MSProfileState.PSVersionInfo
     $foregroundColor = $script:MSProfileState.ForegroundColor

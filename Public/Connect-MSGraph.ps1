@@ -36,7 +36,7 @@ function Connect-MSGraph {
         Connect-MSGraph -Scopes "User.Read.All", "Group.ReadWrite.All"
 
     .LINK
-        https://github.com/nikkelly/microsoftServicesProfile
+        https://github.com/nikkelly/M365Connect
     #>
     [CmdletBinding()]
     param(
