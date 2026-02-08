@@ -15,7 +15,7 @@
     Author = 'nikkelly'
 
     # Company or vendor of this module
-    CompanyName = 'Unknown'
+    CompanyName = 'nikkelly'
 
     # Copyright statement for this module
     Copyright = '(c) nikkelly. All rights reserved.'
